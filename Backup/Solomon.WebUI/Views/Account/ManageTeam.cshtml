@@ -1,0 +1,218 @@
+﻿@model Solomon.WebUI.Models.ManageTeamViewModel
+@{
+    ViewBag.Title = "Редактирование команды";
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+}
+
+<hgroup class="title">
+    <h1>@ViewBag.Title</h1>
+</hgroup>
+
+<ul class="system_messages" style="display: none;">
+    <li><span class="ico"></span><strong class="system_title"></strong></li>
+</ul>
+
+<section>
+    <fieldset style="margin-top:0px;">
+        <legend>Редактирование команды</legend>
+        <div class="row">
+            @Html.LabelFor(model => model.Name, new { @style = "width: 200px;" })
+            <div class="inputs" style="width: 920px;">
+                <span class="input_wrapper" style="width: 700px;">
+                    @Html.TextBoxFor(model => model.Name, new { @class = "text", @style = "width: 450px" })
+                    @Html.TextBox("ChangeNameBt", "Сохранить", new { @class = "button", @type = "button", @style = "margin-left: 10px; width: 210px;" })
+                </span>
+                <span class="system negative" style="margin-left: 205px;">@Html.ValidationMessageFor(model => model.Name, null, new { id = "name-message" })</span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.Label("Пригласить участников", new { @for = "UserInvite", @style = "width: 200px;" })
+            <div class="inputs" style="width: 920px;">
+                <span class="input_wrapper" style="width: 700px;">
+                    @Html.TextBox("UserInvite", null, new { @style = "width: 450px" })
+                    @Html.TextBox("InviteBt", "Отправить приглашение", new { @class = "button", @type = "button", @style = "margin-left: 10px; width: 210px;" })
+                </span>
+            </div>
+        </div>
+
+        <fieldset style="margin-top:0px; margin-bottom: 15px;">
+            <legend>Участники команды</legend>
+            <table class="without_border" style="width: 100%">
+                <thead>
+                    <tr>
+                        <td><h4 style="margin: 0">#</h4></td>
+                        <td><h4 style="margin: 0">Пользователь</h4></td>
+                        <td><h4 style="margin: 0">Полное имя</h4></td>
+                        <td><h4 style="margin: 0">Состояние</h4></td>
+                    </tr>
+                </thead>
+                <tbody id="membersTable"></tbody>
+            </table>
+        </fieldset>
+    </fieldset>
+    <p>
+        @Html.ActionLink("К списку команд", "Team", "Account", new { Area = "" }, new { @style = "margin-top:10px;" })
+    </p>
+</section>
+
+<script type="text/javascript">
+
+    $(function () {
+
+
+        // *********************************************
+        // Team name
+        //
+        // *********************************************
+        
+        var username_msg = $("#name-message");
+        var message = $(".system_messages");
+
+        $("#@Html.IdFor(model => model.Name)").focus();
+
+        $("#@Html.IdFor(model => model.Name)").blur(function () {
+
+            var name = $(this).val();
+
+            if (name == "") return;
+
+            $.ajax({
+                url: '@Url.Action("CheckForUniqueTeam", "Account")',
+                dataType: 'json',
+                type: 'GET',
+                data: { name: name, teamID: '@Model.TeamID' },
+                success: OnCheckForUniqueTeamSuccess,
+                error: OnCheckForUniqueTeamError
+            });
+        });
+
+        function OnCheckForUniqueTeamSuccess(data) {
+            if (data.Exists) {
+                username_msg.text("Команда с таким именем уже существует. Пожалуйста, введите другое имя.");
+                username_msg.attr("class", "field-validation-error");
+                $("#ChangeNameBt").attr("disabled", "disabled");
+            } else {
+                username_msg.text("");
+                username_msg.attr("class", "field-validation-valid");
+                $("#ChangeNameBt").removeAttr("disabled");
+            }
+        }
+
+        function OnCheckForUniqueTeamError(xhr, status, error) {
+            username_msg.text("Произошла ошибка при проверке уникальности имени.");
+            username_msg.attr("class", "field-validation-error");
+        }
+
+        $("#ChangeNameBt").click(function () {
+            var name = $("#@Html.IdFor(model => model.Name)").val();
+
+            if (name == "") return;
+
+            // Execute the command using jQuery ajax.
+            $.ajax({
+                url: '@Url.Action("ChangeTeamName", "Account")',
+                dataType: 'json',
+                type: 'POST',
+                data: { name: name, teamID: '@Model.TeamID' },
+                success: OnChangeSuccess,
+                error: OnChangeError
+            });
+        });
+
+        function OnChangeSuccess(data) {
+            if (!data.Success) {
+                username_msg.text(data.Message);
+                username_msg.attr("class", "field-validation-error");
+                return;
+            }
+
+            message.show().delay(5000).fadeOut();    // Show the message
+            $("li", message).addClass("green");      // Apply the Green style
+            $("strong", message).text(data.Message); // Insert the message
+        }
+
+        function OnChangeError(xhr, status, error) {
+            //alert(error);
+        }
+
+        // *********************************************
+        // End team name
+        //
+        // Invite
+        //
+        // *********************************************
+
+        var reloadMembersTable = function () {
+            $.ajax({
+                url: '@Url.Action("GetMembersData", "Account")',
+                dataType: 'json',
+                type: 'GET',
+                data: { teamID: '@Model.TeamID' },
+                success: function (data) {
+                    if (data.Success == false) {
+                        alert('error on table reload');
+                    }
+                    $('#membersTable').html(data.HtmlTable);
+                },
+                cache: false
+            });
+        }
+        reloadMembersTable();
+
+        $("#UserInvite").autocomplete({
+            source: '@Html.Raw(Url.Action("GetUsers", "Account", new { TeamID = Model.TeamID, limit = 10 }))',
+            select: function (event, ui) {
+                $("#UserInvite").val(ui.item.label);
+                return false;
+            }
+        });
+
+        $("#InviteBt").click(function () {
+            var userName = $("#UserInvite").val();
+
+            if (userName == "") return;
+
+            // Execute the command using jQuery ajax.
+            $.ajax({
+                url: '@Url.Action("InviteUser", "Account")',
+                dataType: 'json',
+                type: 'POST',
+                data: { userName: userName, teamID: '@Model.TeamID' },
+                success: OnInviteSuccess,
+                error: OnInviteError
+            });
+        });
+
+        function OnInviteSuccess(data) {
+            if (!data.Success) {
+                username_msg.text(data.Message);
+                username_msg.attr("class", "field-validation-error");
+                return;
+            }
+
+            message.show().delay(5000).fadeOut();    // Show the message
+            $("li", message).addClass("green");      // Apply the Green style
+            $("strong", message).text(data.Message); // Insert the message
+            reloadMembersTable();
+        }
+
+        function OnInviteError(xhr, status, error) {
+            //alert(error);
+        }
+
+        // *********************************************
+        // End invite
+        //
+        // *********************************************
+    });
+
+</script>

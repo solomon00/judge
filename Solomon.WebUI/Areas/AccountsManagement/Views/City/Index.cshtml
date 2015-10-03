@@ -1,0 +1,277 @@
+﻿@model Solomon.WebUI.Areas.AccountsManagement.ViewModels.ManageCityViewModel
+@{
+    ViewBag.Title = "Города (населенные пункты)";
+    Layout = "~/Areas/AccountsManagement/Views/Shared/_Layout.cshtml";
+}
+<script type="text/javascript">
+    $(function () {
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "AccountsManagement" }, null) > Города (населенные пункты)
+</div>
+
+<h2>Управление городами (населенными пунктами)</h2>
+
+<p>Нажмите на название города (населнного пункта) для редактирования информации о нем.</p>
+<p>
+    @Html.ActionLink("Создать новый", "Create", "City", new { Area = "AccountsManagement" }, null)
+</p>
+
+<div class="search_wrapper">
+@using (Html.BeginForm())
+{
+    <text>Поиск:&nbsp;</text>
+    <select id="filterBy" name="filterBy">
+        <option value="all" @if (Model.FilterBy == "all")
+                            { <text>selected="selected"</text>}>Все</option>
+        <option value="name" @if (Model.FilterBy == "name")
+                             { <text>selected="selected"</text>}>Название</option>
+        <option value="city" @if (Model.FilterBy == "area")
+                             { <text>selected="selected"</text>}>Район</option>
+        <option value="city" @if (Model.FilterBy == "region")
+                             { <text>selected="selected"</text>}>Область</option>
+    </select>
+    @Html.TextBox("searchTerm", Model.SearchTerm) 
+
+    <input class="button" type="submit" id="filter-button" value="Найти" />
+}
+</div>
+<br />
+
+@if (Model.PaginatedCityList != null)
+{
+    if (Model.PaginatedCityList.Count == 0)
+    {
+    <p>
+        Ничего не найдено.
+    </p>
+    }
+    else
+    {
+    <text>Записей: @Model.PaginatedCityList.TotalCount.ToString()</text>
+    <div class="section_inner">
+        <div class="table_wrapper">
+            <div class="table_wrapper_inner">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tbody>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th>Название</th>
+                            <th>Район</th>
+                            <th>Область</th>
+                            <th>Страна</th>
+                        </tr>
+                        @foreach (Solomon.Domain.Entities.City item in Model.PaginatedCityList)
+                        {
+                            <tr>
+                                <td>@item.CityID</td>
+                                <td>@Html.ActionLink(item.Name, "Update", "City", new { CityID = item.CityID }, null)</td>
+                                <td>@item.Area</td>
+                                <td>@item.Region</td>
+                                <td>@item.Country.Name</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+	<!--[if !IE]>start pagination<![endif]-->
+	<div class="pagination">
+                    
+		<span class="page_no">Страница @Model.PaginatedCityList.PageIndex из @Model.PaginatedCityList.TotalPages</span>
+						
+		<ul class="pag_list">
+            <li>
+            @if (Model.PaginatedCityList.HasPreviousPage)
+            {
+                @Html.ActionLink("Первая", "Index", "City",
+                routeValues: new
+                {
+                    page = 1,
+                    pageSize = Model.PaginatedCityList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Первая</text>
+            }
+            </li>
+			<li>
+            @if (Model.PaginatedCityList.HasPreviousPage)
+            {
+                @Html.ActionLink("Предыдущая", "Index", "City",
+                routeValues: new
+                {
+                    page = Model.PaginatedCityList.PageIndex - 1,
+                    pageSize = Model.PaginatedCityList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Предыдущая</text>
+            }
+            </li>
+
+
+            <li>
+                <select id="pageIndex" name="pageIndex">
+                @for (int i = 0; i < Model.PaginatedCityList.TotalPages; i++)
+                {
+                    <option value="@((i + 1).ToString())" 
+                        @if (Model.PaginatedCityList.PageIndex == i + 1)
+                        {<text>selected="selected"</text>}>@((i + 1).ToString())</option>
+                }
+                </select>
+            </li>
+
+			<li>
+            @if (Model.PaginatedCityList.HasNextPage)
+            {
+                @Html.ActionLink("Следующая", "Index", "City",
+                routeValues: new
+                {
+                    page = Model.PaginatedCityList.PageIndex + 1,
+                    pageSize = Model.PaginatedCityList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Следующая</text>
+            }
+            </li>
+            <li>
+            @if (Model.PaginatedCityList.HasNextPage)
+            {
+                @Html.ActionLink("Последняя", "Index", "City",
+                routeValues: new
+                {
+                    page = Model.PaginatedCityList.TotalPages,
+                    pageSize = Model.PaginatedCityList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Последняя</text>
+            }
+            </li>
+		</ul>
+
+        <div id="page-size">
+        Записей на странице: <select id="pageSize" name="pageSize">
+        <option value="25" @if (Model.PageSize == 25)
+                           {<text>selected="selected"</text>}>25</option>
+        <option value="50" @if (Model.PageSize == 50)
+                           {<text>selected="selected"</text>}>50</option>
+        <option value="100" @if (Model.PageSize == 100)
+                            {<text>selected="selected"</text>}>100</option>
+        </select>
+        </div>
+
+	</div>
+	<!--[if !IE]>end pagination<![endif]-->       
+    }
+}
+<script type="text/javascript">
+
+    $(function () {
+
+
+
+        /**************************************************
+        * Begin filterBy functions
+        *
+        * This will enable or disable the search field
+        * if the "ViewAll" selection is chosen.
+        **************************************************/
+
+        $(document).on('change', '#filterBy', function () {
+            var optionValue = $("option:selected", this).val();
+            if (optionValue == "all") {
+                // Clear the search field
+                $("#searchTerm").val("");
+
+                // Disable the search term field
+                $("#searchTerm").attr("disabled", "disabled");
+            } else {
+                $("#searchTerm").removeAttr("disabled");
+            }
+        });
+
+
+        function InitSearchField() {
+            var filterByVal = $("#filterBy option:selected").val();
+            if (filterByVal == "all") {
+                $("#searchTerm").attr("disabled", "disabled");
+            }
+        }
+
+        InitSearchField();
+
+        /**************************************************
+        * End filterBy functions
+        **************************************************/
+
+
+        /**************************************************
+        * Begin PageIndex functions
+        *
+        * This handles the page index selected change functions.
+        **************************************************/
+
+        $("#pageIndex").change(function () {
+            var pageIndexVal = '?page=' + $("option:selected", this).val();
+            var pageSizeVal = '&pageSize=' + $("#pageSize option:selected").val();
+            var filterByVal = '&filterBy=' + $("#filterBy option:selected").val();
+            var searchTerm = '&searchTerm=' + '@Model.SearchTerm';
+            location.href = '/AccountsManagement/City/Index' + pageIndexVal + pageSizeVal + filterByVal + searchTerm;
+        });
+
+        /**************************************************
+        * End PageIndex functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin PageSize functions
+        *
+        * This handles the page size selected change functions.
+        **************************************************/
+
+        $("#pageSize").change(function () {
+            var filterByVal = '&filterBy=' + $("#filterBy option:selected").val();
+            var searchTermVal = $("#searchTerm").val();
+            if (searchTermVal != '') searchTermVal = '&searchTerm=' + searchTermVal;
+            var pageSizeVal = '?pageSize=' + $("option:selected", this).val();
+            location.href = '/AccountsManagement/City/Index' + pageSizeVal + searchTermVal + filterByVal;
+        });
+
+        /**************************************************
+        * End PageSize functions
+        **************************************************/
+
+
+    });
+
+</script>

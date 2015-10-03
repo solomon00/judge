@@ -1,0 +1,68 @@
+﻿@model Solomon.WebUI.Areas.TestersManagement.ViewModels.ManageTestersViewModel
+@{
+    ViewBag.Title = "Тестеры";
+    Layout = "~/Areas/TestersManagement/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    $(document).ready(function ()
+    {
+        var reloadTable = function () {
+            $.ajax({
+                url: '@Url.Action("GetTesterInfo", "Tester")',
+                dataType: 'json',
+                type: 'GET',
+                success: function (data) {
+                    $.each(data.Testers, function (i, item) {
+                        var cell = document.getElementById(item.Address + "CPULoad");
+                        cell.innerHTML = item.CPULoad + "%";
+                        var cell = document.getElementById(item.Address + "IsConnected");
+                        cell.innerHTML = item.IsConnected;
+                    });
+                },
+                cache: false
+            });
+        }
+        reloadTable();
+        var timer = setInterval(reloadTable, 2000);
+    });
+</script>
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "TestersManagement" }, null) > Тестеры
+</div>
+
+<h2>
+    Тестеры
+</h2>
+
+<p>Всего тестирующих серверов: @Model.Testers.Count</p>
+<div class="section_inner">
+    <div class="table_wrapper">
+        <div class="table_wrapper_inner">
+            <table cellpadding="0" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Адрес</th>
+                        <th>Загрузка ЦП</th>
+                        <th>Соединение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Solomon.WebUI.Areas.TestersManagement.ViewModels.ShowTesterViewModel tester in Model.Testers)
+                    {
+                        <tr>
+                            <td>@Html.ActionLink(tester.Address, "Show", "Tester", new { Address = tester.Address, Area = "TestersManagement" }, null)</td>
+                            <td id="@(tester.Address)CPULoad">@tester.CPULoad%</td>
+                            <td id="@(tester.Address)IsConnected">@tester.IsConnected</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <p>
+        @Html.ActionLink("Удалить", "DeleteDisconnectedTesters", "Tester", new { Area = "TestersManagement" }, null) 
+        тестеры, с которыми потеряно соединение 
+    </p>
+</div>

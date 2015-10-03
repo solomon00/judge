@@ -1,0 +1,67 @@
+﻿@model Solomon.WebUI.Areas.TestersManagement.ViewModels.ManageCompilersViewModel
+@{
+    ViewBag.Title = "Компиляторы";
+    Layout = "~/Areas/TestersManagement/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead
+{
+        @Styles.Render("~/Content/TestersManagement.css")
+}
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "TestersManagement" }, null) > Компиляторы
+</div>
+
+<h2>Компиляторы</h2>
+
+<div class="compilers">
+@using (Html.BeginForm("Index", "Compilers", FormMethod.Post, new { Area = "TestersManagement", enctype = "multipart/form-data" }))
+{
+    <fieldset>
+        <legend>Редактирование доступных компиляторов</legend>
+        <table class="without_border">
+            <tr>
+                <td colspan="2"><b>Language</b></td>
+                <td><b>Title</b></td>
+                <td><b>FileName</b></td>
+                <td><b>Compiler options</b></td>
+            </tr>
+        @for (int i = 0; i < Model.Compilers.Count; i++)
+        {
+            bool disabled = Model.Compilers[i].CompilerID == Solomon.TypesExtensions.ProgrammingLanguages.CS ||
+                Model.Compilers[i].CompilerID == Solomon.TypesExtensions.ProgrammingLanguages.Java ||
+                Model.Compilers[i].CompilerID == Solomon.TypesExtensions.ProgrammingLanguages.Python ||
+                Model.Compilers[i].CompilerID == Solomon.TypesExtensions.ProgrammingLanguages.VB;
+            if (!Model.Compilers[i].Available)
+            {
+                <tr class="row_error_top">
+                    <td colspan="4"><label><span class="error">Компилятор не установлен на тестерах</span></label></td>
+                </tr>
+            }
+            <tr class="row">
+                <td>@Html.CheckBoxFor(model => model.Compilers[i].Enable)</td>
+                <td>
+                    @Html.Label(Model.Compilers[i].CompilerID.ToString())
+                    @Html.HiddenFor(model => model.Compilers[i].CompilerID)
+                </td>
+                <td>@Html.TextBoxFor(model => model.Compilers[i].Name)</td>
+                @if (!disabled)
+                { 
+                <td>@Html.TextBoxFor(model => model.Compilers[i].Command)</td>
+                <td>@Html.TextBoxFor(model => model.Compilers[i].Options, new { style = "width: 210px;" })</td>
+                }
+                else
+                {
+                <td>@Html.TextBoxFor(model => model.Compilers[i].Command, new { @disabled = "disabled" })</td>
+                <td>@Html.TextBoxFor(model => model.Compilers[i].Options, new { @disabled = "disabled", style = "width: 210px;" })</td>
+                }
+            </tr>
+        }
+        </table>
+        <p>
+            <input class="button" type="submit" value="Сохранить" style="width:150px;"/>
+        </p>
+    </fieldset>
+}
+</div>

@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>@ViewBag.Title - Solomon</title>
+        <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <meta name="viewport" content="width=device-width" />
+        @Styles.Render("~/Content/css")
+        @Styles.Render("~/Content/Pagination.css")
+        @Styles.Render("~/Content/Management.css")
+        @Scripts.Render("~/bundles/modernizr")
+        @Scripts.Render("~/bundles/jquery")
+        @RenderSection("scripts", required: false)
+
+        @if (IsSectionDefined("AddToHead"))
+        {
+            @RenderSection("AddToHead", required: false)
+        }
+
+        @RenderSection("AddToHeadAnotherWay", required: false)
+    </head>
+    <body>
+        <header>
+            <div class="content-wrapper">
+                <div class="float-left">
+                    <a href="@Url.Action("Index", "Home", new { area = "" })" class="no-background"> 
+                        <img src="~/Images/logo.png" width="200" height="60" style="border: 0;" /> 
+                    </a>
+                </div>
+                <div class="float-right" style="text-align:center">
+                    <section id="login">
+                        @Html.Partial("_LoginPartial")
+                    </section>
+                </div>
+            </div>
+        </header>
+        <div id="body">
+            @RenderSection("featured", required: false)
+            <section class="content-wrapper main-content clear-fix">
+                <div class="float-left menu">
+                    <ul class="left-menu">
+                        <li>@Html.ActionLink("Главная", "Index", "Home", new { Area = "TestersManagement" }, null)</li>
+                        <li>@Html.ActionLink("Тестеры", "Index", "Tester", new { Area = "TestersManagement" }, null)</li>
+                        <li style="border-bottom: none;">
+                            <ul>
+                                <li>@Html.ActionLink("Решения", "Solutions", "Tester", new { Area = "TestersManagement" }, null)</li>
+                            </ul>
+                        </li>
+                        <li>@Html.ActionLink("Компиляторы", "Index", "Compilers", new { Area = "TestersManagement" }, null)</li>
+                    </ul>
+                </div>
+                <script>
+                    $(document).ready(function () {
+                        $(window).scroll(function () {
+                            var scrollTop = 90;
+                            if ($(window).scrollTop() >= scrollTop) {
+                                $('.menu').css({
+                                    position: 'fixed',
+                                    top: '0'
+                                });
+                            }
+                            if ($(window).scrollTop() < scrollTop) {
+                                $('.menu').removeAttr('style');
+                            }
+                        })
+                    });
+                </script>
+                <div class="right-content">
+                    @RenderBody()
+                </div>
+            </section>
+        </div>
+        <footer>
+            <div class="content-wrapper">
+                <div class="float-left">
+                    <ul id="footer-menu">
+                        <li>@Html.ActionLink("Главная", "Index", "Home", new { area = "" }, null)</li>
+                        <li>@Html.ActionLink("О проекте", "About", "Home", new { area = "" }, null)</li>
+                        <li>@Html.ActionLink("Контакты", "Contact", "Home", new { area = "" }, null)</li>
+                    </ul>
+                    <p>&copy; @DateTime.Now.Year - Solomon</p>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,79 @@
+﻿body {
+}
+
+/*************************************
+* Begin Management Styles
+*************************************/
+
+div.row label
+{
+    display: block;
+    float: left;
+    width: 700px;
+    font-weight: bold;
+    margin-left: 2px;
+}
+div.row label.checkbox
+{
+    display: inline;
+    float: none;
+    width: 700px;
+    font-weight: bold;
+}
+div.row div.inputs
+{
+    /*width: 520px;*/
+    /*width: 790px;*/
+    width: 700px;
+    margin-left: 1px;
+}
+div.row div.inputs .input_wrapper
+{
+    float: left;
+    width: 700px;
+    margin: 0;
+    padding: 0;
+    /*border: 1px solid #cecece;*/
+}
+div.row div.inputs .input_wrapper input.text, 
+div.row div.inputs .input_wrapper textarea.text
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 688px;
+}
+div.row div.inputs .input_wrapper select.text
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 698px;
+}
+div.row div.inputs .input_wrapper input[type="file"]
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 3px;
+    width: 688px;
+}
+
+div.row div.inputs .input_wrapper input.half-text, 
+div.row div.inputs .input_wrapper input.text-box
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 320px;
+}
+div.row div.inputs .input_wrapper select.half-text {
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 332px;
+}

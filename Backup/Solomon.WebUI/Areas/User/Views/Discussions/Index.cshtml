@@ -1,0 +1,67 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.DiscussionsViewModel
+@{
+    ViewBag.Title = "Обсуждения";
+    if (Model.CanChangePassword)
+    {
+        Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {    
+        Layout = "~/Areas/User/Views/Shared/_LayoutWithoutPassword.cshtml"; 
+    }
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/ui.datepicker-ru.js")"></script>
+}
+
+<h2>@ViewBag.Title</h2>
+
+<script>
+    $(function() {
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+<section>
+    @if (Model.NewComments.Count() > 0)
+    {
+        foreach (var commentsTournament in Model.NewComments)
+        {
+            <fieldset>
+                <legend>@commentsTournament.First().Tournament.Name</legend>
+                <table class="without_border" style="width: 100%">
+                    <tr>
+                        <th>Задача</th>
+                        <th style="width: 150px; text-align: center;">Новых сообщений</th>
+                        <th style="width: 150px; text-align: center;">Последнее</th>
+                    </tr>
+                    @foreach (var comments in commentsTournament.GroupBy(ct => ct.Problem))
+                    {
+                        Solomon.Domain.Entities.Comment comment = comments.First();
+                        <tr class="highlight">
+                            <td>@Html.ActionLink(comment.Problem.Name, "Comments", "Problem", new { ProblemID = @comment.Problem.ProblemID, TournamentID = @comment.Tournament.TournamentID, Area = "" }, null) </td>
+                            <td style="text-align: center;">@comments.Count()</td>
+                            <td style="text-align: center;">@comments.OrderByDescending(c => c.Date).First().Date</td>
+                        </tr>
+                    }
+                </table>
+            </fieldset>
+        }
+    }
+    else
+    {
+        <p>Нет новых сообщений</p>
+    }
+</section>
+

@@ -1,0 +1,64 @@
+﻿@{
+    Layout = null;
+}
+
+@if ((bool)ViewData["HasResults"])
+{
+    <table style="width: 100%">
+        <thead>
+            <tr>
+                <th style="width: 30px;">№</th>
+                <th style="width: 120px;">Время</th>
+                <th style="width: 120px;">Память</th>
+                <th style="width: 200px;">Результат</th>
+            </tr>
+        </thead>
+        <tbody>
+        @{ 
+        int i = 1;
+        foreach (var str in (List<Solomon.Domain.Entities.SolutionTestResult>)ViewData["SolutionTestResults"])
+        {
+            <tr>
+                <td>@(i++)</td>
+                <td>@str.Time&nbsp(мс)</td>
+                <td>@str.Memory&nbsp(байт)</td>
+                <td>
+                    @switch (str.Result)
+                    {
+                        case Solomon.TypesExtensions.TestResults.OK:
+                            <h8>OK</h8>
+                        break;
+                        case Solomon.TypesExtensions.TestResults.WA:
+                            <h9>Wrong&nbspanswer</h9>
+                        break;
+                        case Solomon.TypesExtensions.TestResults.PE:
+                            <h7>Presentation&nbsperror</h7>
+                        break;
+                        case Solomon.TypesExtensions.TestResults.FL:
+                            @:Fail
+                        break;
+                        case Solomon.TypesExtensions.TestResults.CE:
+                            <h7>Compilation&nbsperror</h7>
+                        break;
+                        case Solomon.TypesExtensions.TestResults.TLE:
+                            <h7>Time&nbsplimit&nbspexceeded</h7>
+                        break;
+                        case Solomon.TypesExtensions.TestResults.MLE:
+                            <h7>Memory&nbsplimit&nbspexceeded</h7>
+                        break;
+                        case Solomon.TypesExtensions.TestResults.RTE:
+                            <h7>Run-time&nbsperror</h7>
+                        break;
+                    }
+                </td>
+            </tr>
+            
+        }
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Нет информации для отображения</p>
+}

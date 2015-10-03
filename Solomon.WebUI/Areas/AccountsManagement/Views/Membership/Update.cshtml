@@ -1,0 +1,582 @@
+﻿@model Solomon.WebUI.Areas.AccountsManagement.ViewModels.UserViewModel
+@{
+    ViewBag.Title = "Редактировать аккаунт";
+    Layout = "~/Areas/AccountsManagement/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/ui.datepicker-ru.js")"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+
+        <link href="@Url.Content("~/Content/multi-select/multi-select.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery.multi-select.js")" type="text/javascript"></script>
+}
+
+<script type="text/javascript">
+    $(function () {
+        // ********************************************************************
+        // Country, city, institution fields
+        // 
+        if ($("#@Html.IdFor(model => model.Country)").val() == "")
+            $("#@Html.IdFor(model => model.City)").prop('disabled', true);
+        if ($("#@Html.IdFor(model => model.City)").val() == "")
+            $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+        var countryID = $("#@Html.IdFor(model => model.CountryID)").val();
+        var country = $("#@Html.IdFor(model => model.Country)").val();
+        var cityID = $("#@Html.IdFor(model => model.CityID)").val();
+        var city = $("#@Html.IdFor(model => model.City)").val();
+        var institutionID = $("#@Html.IdFor(model => model.InstitutionID)").val();
+        var institution = $("#@Html.IdFor(model => model.Institution)").val();
+
+        $("#@Html.IdFor(model => model.Country)").autocomplete({
+            source: '@Url.Action("Country", "Database", new { Area = "", limit = 10 })',
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.Country)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                country = ui.item.label;
+                $("#@Html.IdFor(model => model.Country)").val(country);
+                $("#@Html.IdFor(model => model.City)").prop('disabled', false);
+
+                $("#@Html.IdFor(model => model.CountryID)").val(ui.item.value);
+
+                if (countryID != ui.item.value) {
+                    $("#@Html.IdFor(model => model.City)").val("");
+                    $("#@Html.IdFor(model => model.CityID)").val("");
+                    $("#@Html.IdFor(model => model.Institution)").val("");
+                    $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                    $("#@Html.IdFor(model => model.City)").prop('disabled', false);
+                    $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+                    countryID = ui.item.value;
+                    cityID = null;
+                    city = null;
+                    institutionID = null;
+                    institution = null;
+
+                    $("#@Html.IdFor(model => model.City)").autocomplete("option", "source", '@Url.Action("City", "Database", new { Area = "", limit = 40 })&CountryID=' + countryID);
+                    $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.Country)").val() != "") {
+                        $("#@Html.IdFor(model => model.Country)").val(country);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.CountryID)").val("");
+                        $("#@Html.IdFor(model => model.City)").val("");
+                        $("#@Html.IdFor(model => model.CityID)").val("");
+                        $("#@Html.IdFor(model => model.Institution)").val("");
+                        $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                        $("#@Html.IdFor(model => model.City)").prop('disabled', true);
+                        $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+                        countryID = null;
+                        country = null;
+                        cityID = null;
+                        city = null;
+                        institutionID = null;
+                        institution = null;
+
+                        $("#@Html.IdFor(model => model.City)").autocomplete("option", "source", "@Url.Action("City", "Database", new { Area = "", limit = 40 })&CountryID=" + countryID);
+                        $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        });
+        $("#@Html.IdFor(model => model.City)").autocomplete({
+            source: '@Url.Action("City", "Database", new { Area = "", limit = 40 })&CountryID=' + countryID,
+            focus: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.City)").val(city);
+                return false;
+            },
+            select: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.City)").val(city);
+                $("#@Html.IdFor(model => model.Institution)").prop('disabled', false);
+
+                $("#@Html.IdFor(model => model.CityID)").val(ui.item.value);
+
+                if (cityID != ui.item.value) {
+                    $("#@Html.IdFor(model => model.Institution)").val("");
+                    $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                    $("#@Html.IdFor(model => model.Institution)").prop('disabled', false);
+
+                    cityID = ui.item.value;
+                    institutionID = null;
+                    institution = null;
+
+                    $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.City)").val() != "") {
+                        $("#@Html.IdFor(model => model.City)").val(city);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.CityID)").val("");
+                        $("#@Html.IdFor(model => model.Institution)").val("");
+                        $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                        $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+                        cityID = null;
+                        city = null;
+                        institutionID = null;
+                        institution = null;
+
+                        $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .append("<a style=\"padding: 0 .4em;\">" + item.label + "</a>")
+                .appendTo(ul);
+        };
+
+        $("#@Html.IdFor(model => model.Institution)").autocomplete({
+            source: '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID,
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.Institution)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                institution = ui.item.label;
+                $("#@Html.IdFor(model => model.Institution)").val(institution);
+
+                $("#@Html.IdFor(model => model.InstitutionID)").val(ui.item.value);
+
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.Institution)").val() != "") {
+                        $("#@Html.IdFor(model => model.Institution)").val(institution);
+                    }
+                    else {
+                        institutionID = null;
+                        institution = null;
+                    }
+                }
+                return false;
+            }
+        });
+        //
+        // End country, city, institution fields
+        // ********************************************************************
+
+        $("#@Html.IdFor(model => model.BirthDay)").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            //dateFormat: "dd.mm.yy"
+        });
+        $("#@Html.IdFor(model => model.BirthDay)").datepicker(
+            $.datepicker.regional["ru"]
+        );
+
+        $.validator.addMethod('date',
+            function (value, element, params) {
+                if (this.optional(element)) {
+                    return true;
+                }
+
+                var ok = true;
+                try {
+                    $.datepicker.parseDate('dd.mm.yy', value);
+                }
+                catch (err) {
+                    ok = false;
+                }
+                return ok;
+            });
+
+
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Dashboard", new { Area = "AccountsManagement" }, null) > 
+    @Html.ActionLink("Пользователи", "Index", "Membership", new { Area = "AccountsManagement" }, null) > 
+    Редактировать аккаунт
+</div>
+
+<h2>Информация о пользователе</h2>
+
+@using (Html.BeginForm("Update", "Membership", new { UserName = @Model.UserName }, FormMethod.Post, new { Area = "AccountsManagement", enctype = "multipart/form-data", id = "user-form" }))
+{
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <div class="row">
+            @Html.LabelFor(model => model.UserName)
+            <div class="inputs">
+                <span class="input_wrapper">@Model.UserName</span>
+            </div>
+        </div>
+        @*first row*@
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.SecondName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.SecondName, new { @class = "half-text", tabindex = "1" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.SecondName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.Country)
+                @Html.HiddenFor(model => model.CountryID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.Country, new { @class = "half-text", tabindex = "6" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.Country)</span>
+                </div>
+            </div>
+        </div>
+
+        @*second row*@
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.FirstName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.FirstName, new { @class = "half-text", tabindex = "2" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.FirstName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.City)
+                @Html.HiddenFor(model => model.CityID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.City, new { @class = "half-text", tabindex = "7" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.City)</span>
+                </div>
+            </div>
+        </div>
+
+        @*third row*@
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.ThirdName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.ThirdName, new { @class = "half-text", tabindex = "3" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.ThirdName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.Institution)
+                @Html.HiddenFor(model => model.InstitutionID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.Institution, new { @class = "half-text", tabindex = "8" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.Institution)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.BirthDay)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.BirthDay, new { @Value = Model.BirthDay != null ? ((DateTime)Model.BirthDay).ToString("dd.MM.yyyy") : String.Empty, data_val_date = "Пожалуйста, введите дату в формате dd.mm.yyyy", @class = "half-text", tabindex = "4" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.BirthDay)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.CategoryList)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.DropDownListFor(model => model.CategoryListID, Model.CategoryList, new { @class = "half-text", tabindex = "9" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.CategoryList)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.PhoneNumber)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.PhoneNumber, new { @class = "half-text", tabindex = "5" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.PhoneNumber)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.GradeLevel)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.GradeLevel, new { @class = "half-text", tabindex = "10" })</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.Roles)
+            <div class="inputs">
+                @Html.ListBoxFor(m => m.RolesIds, Model.Roles)
+            </div>
+        </div>
+
+        @*<div class="row">
+            <label>@Html.LabelFor(model => model.User.Comment)</label>
+            <div class="inputs">
+                <span class="input_wrapper textarea_wrapper">
+                    @Html.TextAreaFor(model => model.User.Comment, new { @class = "text" })
+                </span><span class="system">@Html.ValidationMessageFor(model => model.User.Comment)</span>
+            </div>
+        </div>
+        <div class="row">
+            <label>@Html.LabelFor(model => model.User.IsApproved, "Is Approved")</label>
+            <div class="inputs">
+                <span class="input_wrapper">
+                    @{
+    string btnLblApprove = "";
+    string cssClass = "";
+    if (Model.User.IsApproved)
+    {
+        btnLblApprove = "Deny";
+        cssClass = "positive";
+    }
+    else
+    {
+        btnLblApprove = "Approve";
+        cssClass = "negative";
+    }
+                        <text><span id="approve-deny-div" class="system @cssClass">@(Model.User.IsApproved ? "Approved" : "Not Approved")</span></text>
+                        <text>&nbsp;- <a id="btn-approve" href="#">@btnLblApprove</a></text>
+                    }
+                </span><span class="system" id="approve-message"></span>
+            </div>
+        </div>
+        <div class="row">
+            <label>@Html.LabelFor(model => model.User.IsLockedOut, "Is Locked Out")</label>
+            <div class="inputs">
+                <span class="input_wrapper">
+                    @{
+                    
+    if (Model.User.IsLockedOut)
+    {
+        cssClass = "negative";
+    }
+    else
+    {
+        cssClass = "positive";
+    }
+                        <text><span id="locked-unlocked-div" class="system @cssClass">@(Model.User.IsLockedOut ? "Locked" : "Unlocked")</span> </text>
+                        if (Model.User.IsLockedOut)
+                        { 
+                            <span id="unlock-span">&nbsp;- <a id="btn-lock" href="#">Unlock</a></span>    
+                        }
+                    }
+                </span><span class="system" id="lock-message"></span>
+            </div>
+        </div>
+        <div class="row">
+            <label>@Html.LabelFor(model => model.User.IsOnline, "Is Online")</label>
+            <div class="inputs">
+                <span class="input_wrapper">
+                    @{
+    if (Model.User.IsOnline)
+    {
+                        <text>Online</text>
+    }
+    else
+    {
+                        <text>Off-line</text>
+    }
+                    }
+                </span>
+            </div>
+        </div>
+        <div class="row">
+            <label>@Html.LabelFor(model => model.User.LastActivityDate, "Last Activity Date")</label>
+            <div class="inputs">
+                <span class="input_wrapper">@Model.User.LastActivityDate</span>
+            </div>
+        </div>
+        <div class="row">
+            <label>@Html.LabelFor(model => model.User.LastLockoutDate, "Last Lockout Date")</label>
+            <div class="inputs">
+                <span class="input_wrapper">@Model.User.LastLockoutDate</span>
+            </div>
+        </div>
+        <div class="row">
+            <label>@Html.LabelFor(model => model.User.LastLoginDate, "Last Login Date")</label>
+            <div class="inputs">
+                <span class="input_wrapper">@Model.User.LastLoginDate</span>
+            </div>
+        </div>
+        <div class="row">
+            <label>
+                Last Password
+                <br />
+                Changed Date</label>
+            <div class="inputs">
+                <span class="input_wrapper">@Model.User.LastPasswordChangedDate</span>
+            </div>
+        </div>
+        @if (@Model.RequiresSecretQuestionAndAnswer)
+        {
+            <div class="row">
+                <label>@Html.LabelFor(model => model.User.PasswordQuestion, "Password Question")</label>
+                <div class="inputs">
+                    <span class="input_wrapper">@Model.User.PasswordQuestion</span>
+                </div>
+            </div>
+        }*@
+        @*<fieldset>
+            <legend>Роли для @Model.UserName (@Html.ActionLink("Редактировать", "GrantRolesToUsers", "Membership", new { userName = @Model.UserName }, null))</legend>
+            <ul>
+                @foreach (var role in @Model.Roles)
+                {
+                    <li>@role</li>
+                }
+            </ul>
+        </fieldset>*@
+        @Html.HiddenFor(model => model.UserName)
+        @*@Html.HiddenFor(model => model.User.ProviderUserKey)*@
+        
+        <p style="text-align: right;">
+            <input class="button" type="submit" value="Сохранить" name="Update" />&nbsp;
+            <input class="button" type="submit" value="Удалить" name="Delete" class="cancel"/>&nbsp;
+            <input class="button" type="submit" value="Отмена" name="Cancel" class="cancel"/>
+        </p>
+    </fieldset>
+    
+}
+<script type="text/javascript">
+
+    $(function () {
+
+        $('#@Html.IdFor(m => m.RolesIds)').multiSelect({
+            selectableHeader: "<div class='custom-header'>Доступные роли</div>",
+            selectionHeader: "<div class='custom-header'>Добавленные роли</div>"
+        });
+
+        $("#DeleteUser").click(function () {
+            if (confirm("Are you sure you want to delete this user?  This will delete the user and any granted roles.")) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+
+
+        /*****************************************************
+        * Begin Approve/Deny functions
+        *****************************************************/
+        var approveMsg = $("#approve-message");
+        $("#btn-approve").click(function () {
+            var userName = $("#User_UserName");
+
+            $.ajax({
+                url: '@Url.Action("ApproveDeny", "Membership")',
+                dataType: 'json',
+                type: 'POST',
+                data: { userName: userName.val() },
+                success: OnApproveDenySuccess,
+                error: OnApproveDenyError
+            });
+        });
+
+        function OnApproveDenySuccess(data) {
+            if (data.Success) {
+                approveMsg.text(data.Message).addClass("positive").show().delay(3000).fadeOut();
+                if (data.Approved) {
+                    $("#btn-approve").text("Deny");
+                    $("#approve-deny-div").text("Approved").addClass("system").addClass("positive").removeClass("negative");
+                } else {
+                    $("#btn-approve").text("Approve");
+                    $("#approve-deny-div").text("Not Approved").addClass("system").addClass("negative").removeClass("positive");
+                }
+                $("span .approved-notice").text(data.ApprovedStatus);
+
+            } else {
+                approveMsg.text(data.Message).addClass("negative").delay(5000).fadeOut();
+            }
+        }
+
+        function OnApproveDenyError(xhr, status, error) {
+            approveMsg.text(error).addClass("negative").delay(5000).fadeOut();
+        }
+
+        /*****************************************************
+        * End Approve/Deny functions
+        *****************************************************/
+
+
+
+
+
+
+        /*****************************************************
+        * Begin Unlock functions
+        *****************************************************/
+
+        var lockMsg = $("#lock-message");
+
+        $("#btn-lock").click(function () {
+            var userName = $("#User_UserName");
+
+            $.ajax({
+                url: '@Url.Action("Unlock", "Membership")',
+                dataType: 'json',
+                type: 'POST',
+                data: { userName: userName.val() },
+                success: OnUnlockSuccess,
+                error: OnUnlockError
+            });
+        });
+
+        function OnUnlockSuccess(data) {
+            if (data.Success) {
+                lockMsg.text(data.Message).addClass("positive").show().delay(3000).fadeOut();
+                if (data.Locked) {
+                    $("#locked-unlocked-div").text(data.LockedStatus).removeClass("positive").addClass("negative");
+                } else {
+                    $("#unlock-span").hide();
+                    $("#locked-unlocked-div").text(data.LockedStatus).removeClass("negative").addClass("positive");
+                }
+            } else {
+                lockMsg.text(data.Message).addClass("negative").delay(5000).fadeOut();
+            }
+        }
+
+        function OnUnlockError(xhr, status, error) {
+            lockMsg.text(error).addClass("negative").delay(5000).fadeOut();
+        }
+
+        /*****************************************************
+        * End Unlock functions
+        *****************************************************/
+
+
+
+
+    });
+</script>

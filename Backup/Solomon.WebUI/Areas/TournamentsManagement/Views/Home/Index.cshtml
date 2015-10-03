@@ -1,0 +1,47 @@
+﻿@model Solomon.WebUI.Areas.TournamentsManagement.ViewModels.HomeViewModel
+@{
+    ViewBag.Title = "Управление турнирами";
+    Layout = "~/Areas/TournamentsManagement/Views/Shared/_Layout.cshtml";
+}
+<h2>
+    Управление турнирами
+</h2>
+<div class="fl w48pc mr20">
+    <fieldset>
+        <legend>Информация о турнирах</legend>
+        <table>
+            <tr>
+                <td>Всего турниров:</td>
+                <td>@Model.TotalTournamentCount</td>
+            </tr>
+            <tr>
+                <td>Активных турниров:</td>
+                <td>@Model.TotalActiveTournamentCount</td>
+            </tr>
+            <tr>
+                <td>Завершенных турниров:</td>
+                <td>@Model.TotalFinishTournamentCount</td>
+            </tr>
+            <tr>
+                <td>Неначатых турниров:</td>
+                <td>@Model.TotalNotBegunTournamentCount</td>
+            </tr>
+            <tr>
+                <td>Турниров в формате ACM:</td>
+                <td>@Model.ACMTournamentCount</td>
+            </tr>
+            <tr>
+                <td>Турниров в формате IOI:</td>
+                <td>@Model.IOITournamentCount</td>
+            </tr>
+            <tr>
+                <td>Открытых турниров:</td>
+                <td>@Model.OpenTournamentCount</td>
+            </tr>
+            <tr>
+                <td>Закрытых турниров:</td>
+                <td>@Model.CloseTournamentCount</td>
+            </tr>
+        </table>
+    </fieldset>
+</div>

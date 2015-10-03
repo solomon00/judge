@@ -1,0 +1,111 @@
+﻿@model Solomon.WebUI.ViewModels.TournamentListViewModel
+@{
+    ViewBag.Title = "Главная";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/jqtimeline/css/main.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/jqtimeline/css/jquery.jqtimeline.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery.jqtimeline.js")"></script>
+}
+
+@section featured {
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title" style="text-align: center;">
+                <div class="float-left">
+                    @*<p class="site-title">@Html.ActionLink("Solomon", "Index", "Home")</p>*@
+                    @*<a href="@Url.Action("Index", "Home")" class="no-background"> 
+                        <img src="~/Images/logo.png" width="240" height="80" style="border: 0;"/> 
+                    </a>*@
+                </div>
+                <div style="padding-top: 12px;">
+                    <h1>автоматическая система тестирования</h1>
+                </div>
+                
+            </hgroup>
+            <div class="banner" style="padding-bottom: 20px;">
+                <img src="~/Images/banner.jpg" style="border: 0;" />
+            </div>
+
+            
+            @*<p>
+                Система позволяет проводить турниры и осуществляет проверку решений
+                в полностью автоматическом режиме.
+            </p>*@
+        </div>
+    </section>
+}
+
+
+@if (Model.ActiveTournaments.Count() != 0)
+{
+    <h2>Текущие турниры</h2>
+    <table class="without_border" style="width: 100%">
+        <thead>
+            <tr>
+                <td style="width: 10px;"><strong>#</strong></td>
+                <td><strong>Название</strong></td>
+                <td style="width: 140px"><strong>Дата завершения</strong></td>
+                <td style="width: 100px"><strong>Результаты</strong></td>
+                @if (User.IsInRole("Administrator") || User.IsInRole("Judge"))
+                {
+                    <td style="width: 100px"><strong>Статистика</strong></td>
+                }
+            </tr>
+        </thead>
+    @{int i = 0;}
+    @foreach (var t in Model.ActiveTournaments)
+    {
+        i++;
+        <tr class="highlight">
+            <td>@i</td>
+            <td>@Html.ActionLink(t.Name, "Problem", "Problem", new { tournamentID = t.TournamentID, area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+            <td>@t.EndDate.ToString("dd.MM.yyyy") в @t.EndDate.ToString("HH:mm")</td>
+            <td>@Html.ActionLink("Просмотреть", "Results", "Tournament", new { TournamentID = t.TournamentID, Area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+            @if (User.IsInRole("Administrator") || User.IsInRole("Judge"))
+            {
+                <td>@Html.ActionLink("Просмотреть", "Statistic", "Tournament", new { TournamentID = t.TournamentID, Area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+            }
+        </tr>
+    }
+    </table>
+}
+
+<br />
+<h2>Календарь будущих турниров</h2>
+
+<div id="myTimeline"></div>
+
+<h3>
+    @Html.ActionLink("Архив турниров", "List", "Tournament")
+</h3>
+
+
+<script type="text/javascript">
+var events = [];
+@foreach (var item in Model.NotBegunTournaments)
+{
+	<text>events.push({ 
+        id: '@item.TournamentID', 
+        name: '@item.Name', 
+        on: new Date(
+            '@item.StartDate.Year',
+            '@(item.StartDate.Month - 1)',
+            '@item.StartDate.Day',
+            '@item.StartDate.Hour',
+            '@item.StartDate.Minute')
+    });</text>
+}
+
+var tl = $('#myTimeline').jqtimeline({
+		events : events,
+		numMonth: 6,
+        gap: 25,
+		click:function(e, event){
+		    window.location = "/Tournament/" + event.id;
+		}
+	});
+</script>

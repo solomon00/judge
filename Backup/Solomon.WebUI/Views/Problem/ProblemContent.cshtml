@@ -1,0 +1,75 @@
+﻿@model Solomon.WebUI.ViewModels.ProblemContentViewModel
+
+@{
+    Layout = null;
+}
+
+@if (Model.ProblemID != -1)
+{
+    <h2>@Model.Name</h2>
+    if (Model.PT != Solomon.TypesExtensions.ProblemTypes.Open)
+    {
+        <table class="without_border">
+            <tr>
+                <td>Входной файл:</td>
+                <td>Стандартный поток ввода</td>
+            </tr>
+            <tr>
+                <td>Выходной файл:</td>
+                <td>Стандартный поток вывода</td>
+            </tr>
+            <tr>
+                <td>Ограничение по времени:</td>
+                <td>@Model.TimeLimit с</td>
+            </tr>
+            <tr>
+                <td>Ограничение по памяти:</td>
+                <td>@Model.MemoryLimit кб</td>
+            </tr>
+        </table>
+    }
+    <h5>Условие:</h5>
+    @Html.Raw(Model.Description)
+    if (Model.PT != Solomon.TypesExtensions.ProblemTypes.Open)
+    {
+        <h5>Формат входных данных:</h5>
+        @Html.Raw(Model.InputFormat)
+        <h5>Формат выходных данных:</h5>
+        @Html.Raw(Model.OutputFormat)
+        <h5>Примеры:</h5>
+        <table style="width: 100%">
+        <thead>
+            <tr>
+                <th>Входные данные</th>
+                <th>Выходные данные</th>
+                @if (Model.TestSamplesComments)
+                {
+                    <th>Комментарий</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Tuple<string, string, string> tuple in Model.TestSamples)
+            {
+                <tr>
+                    <td>@Html.Raw(tuple.Item1)</td>
+                    <td>@Html.Raw(tuple.Item2)</td>
+                    @if (Model.TestSamplesComments)
+                    {
+                        <td>@Html.Raw(tuple.Item3)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+    }
+    else
+    {
+        <h5>Формат вывода:</h5>
+        @Html.Raw(Model.OutputFormat)
+    }
+}
+else
+{
+    <p>Произошла ошибка при загрузке задачи.</p>
+}

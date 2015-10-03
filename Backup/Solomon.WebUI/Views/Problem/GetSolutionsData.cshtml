@@ -1,0 +1,163 @@
+﻿@{
+    Layout = null;
+}
+
+@foreach (var solution in (Solomon.TypesExtensions.PaginatedList<Solomon.Domain.Entities.Solution>)ViewData["Solutions"])
+{
+    <tr>
+        @if (Roles.IsUserInRole("Judge") || Roles.IsUserInRole("Administrator"))
+        {
+            string title = (solution.User.SecondName + " " + solution.User.FirstName + " " + solution.User.ThirdName).Trim();
+            <td title="@title">@solution.User.UserName</td>
+        }
+        <td>@Html.Raw(solution.SendTime.ToString().Replace(" ", "&nbsp;"))</td>
+        @if ((Solomon.TypesExtensions.ProblemTypes)ViewData["PT"] != Solomon.TypesExtensions.ProblemTypes.Open)
+        {
+            <td>@Html.Raw(ViewData[solution.ProgrammingLanguage.ToString()].ToString().Replace(" ", "&nbsp;"))</td>
+        }
+        <td>
+            <div style="float: left;">
+            @switch (solution.Result)
+            {
+                case Solomon.TypesExtensions.TestResults.OK:
+                    <h8>OK</h8>
+                break;
+                case Solomon.TypesExtensions.TestResults.WA:
+                    if (solution.ErrorOnTest != 0)
+                    {
+                        <h9>Wrong&nbspanswer&nbspon&nbsptest&nbsp@(solution.ErrorOnTest)</h9>
+                    }
+                    else
+                    {
+                        <h9>Wrong&nbspanswer</h9>
+                    }
+                break;
+                case Solomon.TypesExtensions.TestResults.PE:
+                    if (solution.ErrorOnTest != 0)
+                    {
+                        <h7>Presentation&nbsperror&nbspon&nbsptest&nbsp@(solution.ErrorOnTest)</h7>
+                    }
+                    else
+                    {
+                        <h7>Presentation&nbsperror</h7>
+                    }
+                break;
+                case Solomon.TypesExtensions.TestResults.FL:
+                    @:Fail
+                break;
+                case Solomon.TypesExtensions.TestResults.CE:
+                    <h7>Compilation&nbsperror</h7>
+                break;
+                case Solomon.TypesExtensions.TestResults.TLE:
+                    if (solution.ErrorOnTest != 0)
+                    {
+                        <h7>Time&nbsplimit&nbspexceeded&nbspon&nbsptest&nbsp@(solution.ErrorOnTest)</h7>
+                    }
+                    else
+                    {
+                        <h7>Time&nbsplimit&nbspexceeded</h7>
+                    }
+                break;
+                case Solomon.TypesExtensions.TestResults.MLE:
+                    if (solution.ErrorOnTest != 0)
+                    {
+                        <h7>Memory&nbsplimit&nbspexceeded&nbspon&nbsptest&nbsp@(solution.ErrorOnTest)</h7>
+                    }
+                    else
+                    {
+                        <h7>Memory&nbsplimit&nbspexceeded</h7>
+                    }
+                break;
+                case Solomon.TypesExtensions.TestResults.RTE:
+                    if (solution.ErrorOnTest != 0)
+                    {
+                        <h7>Run-time&nbsperror&nbspon&nbsptest&nbsp@(solution.ErrorOnTest)</h7>
+                    }
+                    else
+                    {
+                        <h7>Run-time&nbsperror</h7>
+                    }
+                break;
+                case Solomon.TypesExtensions.TestResults.PS:
+                    if ((Solomon.TypesExtensions.TournamentFormats)ViewData["TF"] == Solomon.TypesExtensions.TournamentFormats.IOI)
+                    {
+                        <h7>Partial&nbspsolution</h7>
+                    }
+                    else
+                    {
+                        <h9>Wrong&nbspanswer</h9>
+                    }
+                break;
+                case Solomon.TypesExtensions.TestResults.Waiting:
+                    @:Waiting...
+                break;
+                case Solomon.TypesExtensions.TestResults.Compiling:
+                    @:Compiling...
+                break;
+                case Solomon.TypesExtensions.TestResults.Executing:
+                    @:Executing...
+                break;
+                case Solomon.TypesExtensions.TestResults.Disqualified:
+                    @:Disqualified
+                break;
+                case Solomon.TypesExtensions.TestResults.CHKP:
+                    @:Check pending
+                break;
+            }
+            </div>
+            <div style="float: right;">
+            @if (Roles.IsUserInRole("Judge") || Roles.IsUserInRole("Administrator"))
+            {
+                <script type="text/javascript">
+                    $(function () {
+                        var menu = [{
+                            name: 'Перетестировать',
+                            fun: function () {
+                                changeSolutionStatus('@solution.SolutionID', '@Solomon.TypesExtensions.TestResults.Waiting');
+                                beginReloadTable();
+                                $("#changeSolutionStatus_@solution.SolutionID").contextMenu("close");
+                            }
+                        }, {
+                            name: 'OK',
+                            title: 'Засчитать решение',
+                            fun: function () {
+                                changeSolutionStatus('@solution.SolutionID', '@Solomon.TypesExtensions.TestResults.OK');
+                                beginReloadTable();
+                                $("#changeSolutionStatus_@solution.SolutionID").contextMenu("close");
+                            }
+                        }, {
+                            name: 'Дисквалифицировать',
+                            title: 'Анулировать решение',
+                            fun: function () {
+                                changeSolutionStatus('@solution.SolutionID', '@Solomon.TypesExtensions.TestResults.Disqualified');
+                                beginReloadTable();
+                                $("#changeSolutionStatus_@solution.SolutionID").contextMenu("close");
+                            }
+                        }
+                        ];
+
+                        $("#changeSolutionStatus_@solution.SolutionID").contextMenu(menu);
+                    });
+                </script>
+        
+
+            <div style="float: right; padding: 0 2px 0 2px;">
+                <img src="~/Images/edit-icon.png" id="changeSolutionStatus_@solution.SolutionID" style="width: 12px; height: 12px;" title="Изменить" />
+            </div>
+            }
+            @if ((Solomon.TypesExtensions.TournamentFormats)ViewData["TF"] == Solomon.TypesExtensions.TournamentFormats.IOI &&
+                (Roles.IsUserInRole("Judge") || Roles.IsUserInRole("Administrator")))
+            {
+            <div style="float: right; padding: 0 2px 0 2px;">
+                <img src="~/Images/view-details-icon.png" style="width: 12px; height: 12px;" onclick="showDialog(@solution.SolutionID);" title="Результат тестирования" />
+            </div>
+            }
+                </div>
+        </td>
+        @if ((Solomon.TypesExtensions.TournamentFormats)ViewData["TF"] == Solomon.TypesExtensions.TournamentFormats.IOI)
+        {
+            <td>@solution.Score</td>
+        }
+        <td>@Html.ActionLink(solution.FileName, "GetSolutionFile", "Problem", new { SolutionID = solution.SolutionID, area = "" }, null)</td>
+    </tr>
+}

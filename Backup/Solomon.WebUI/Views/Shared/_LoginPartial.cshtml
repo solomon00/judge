@@ -1,0 +1,94 @@
+﻿@if (Request.IsAuthenticated) 
+{
+    <script type="text/javascript">
+
+        var reloadNewEventsCounter = function () {
+            $.ajax({
+                url: '@Url.Action("GetEventsCount", "Discussions", new { area = "User", UserName = WebSecurity.CurrentUserName })',
+                dataType: 'json',
+                type: 'GET',
+                success: function (data) {
+                    $counter = $('#events-counter');
+                    if (data.TotalCount > 0) {
+                        if ($counter.val() != data.TotalCount) {
+                            $counter.text(data.TotalCount);
+                            $counter.show();
+                        }
+                    } else {
+                        $counter.hide();
+                    }
+
+                    $userCommentsCounter = $('#user-comments-counter');
+                    if ($userCommentsCounter.length > 0) {
+                        if (data.CommentsCount > 0) {
+                            if ($userCommentsCounter.val() != data.CommentsCount) {
+                                $userCommentsCounter.text(data.CommentsCount);
+                                $userCommentsCounter.show();
+                            }
+                        } else {
+                            $userCommentsCounter.hide();
+                        }
+                    }
+
+                    $userInvitesCounter = $('#user-invites-counter');
+                    if ($userInvitesCounter.length > 0) {
+                        if (data.InvitesCount > 0) {
+                            if ($userInvitesCounter.val() != data.InvitesCount) {
+                                $userInvitesCounter.text(data.InvitesCount);
+                                $userInvitesCounter.show();
+                            }
+                        } else {
+                            $userInvitesCounter.hide();
+                        }
+                    }
+                },
+                cache: false
+            });
+        }
+        reloadNewEventsCounter();
+        setInterval(reloadNewEventsCounter, 5000);
+
+    </script>
+    
+    <div style="padding-bottom: 20px;">
+    Добро пожаловать, @Html.ActionLink(User.Identity.Name, "Index", "Profile", routeValues: new { Area = "User", UserName = WebSecurity.CurrentUserName }, htmlAttributes: new { @class = "username", title = "Профиль" })!
+    </div>
+    <div>
+        <ul>
+            <li>@Html.ActionLink("Главная", "Index", "Home", new { Area = "" }, null)</li>
+            <li>
+                <div class="notification-container">
+                    @Html.ActionLink("Личный кабинет", "Index", "Profile", new { Area = "User", UserName = WebSecurity.CurrentUserName }, null)
+                    <span class="notification-counter" id="events-counter"></span>
+                </div>
+            </li>
+            @*<li>@Html.ActionLink("Профиль", "Manage", "Account", new { Area = "" }, null)</li>
+            @if (!User.IsInRole("Administrator") && !User.IsInRole("Judge"))
+            {
+                <li>@Html.ActionLink("Команды", "Team", "Account", new { Area = "" }, null)</li>
+            }*@
+            @if (User.IsInRole("Administrator") || User.IsInRole("Judge"))
+            {
+	            <li>@Html.ActionLink("Аккаунты", "Index", "Home", new { Area = "AccountsManagement" }, null)</li>
+                <li>@Html.ActionLink("Турниры", "Index", "Home", new { Area = "TournamentsManagement" }, null)</li>
+                <li>@Html.ActionLink("Задачи", "Index", "Home", new { Area = "ProblemsManagement" }, null)</li>
+            }
+            @if (User.IsInRole("Administrator"))
+            {
+                <li>@Html.ActionLink("Серверы", "Index", "Home", new { Area = "TestersManagement" }, null)</li>
+            }
+            @using (Html.BeginForm("LogOff", "Account", routeValues: new { Area = "" }, method: FormMethod.Post, htmlAttributes: new { id = "logoutForm" }))
+            {
+                @Html.AntiForgeryToken()
+                <li style="background: none; padding-right: 0; margin-right: 0;"><a href="javascript:document.getElementById('logoutForm').submit()">Выйти</a></li>
+            }
+        </ul>
+    </div>
+} 
+else 
+{
+    <ul style="padding-top: 17px;">
+        <li>@Html.ActionLink("Зарегистрироваться", "Register", "Account", routeValues: new { Area = "" }, htmlAttributes: new { @class = "button1", id = "registerLink" })</li>
+        <li>@Html.ActionLink("Войти", "Login", "Account", new { ReturnUrl = HttpContext.Current.Request.Url.AbsolutePath, Area = "" }, htmlAttributes: new { @class = "button", id = "loginLink" })</li>
+    </ul>
+}

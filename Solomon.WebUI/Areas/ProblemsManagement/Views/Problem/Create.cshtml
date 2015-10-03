@@ -1,0 +1,387 @@
+﻿@model Solomon.WebUI.Areas.ProblemsManagement.ViewModels.NewProblemViewModel
+
+@{
+    ViewBag.Title = "Создать задачу";
+    Layout = "~/Areas/ProblemsManagement/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead
+{
+        <script src="@Url.Content("~/Scripts/customValidation.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+
+        <link href="@Url.Content("~/Content/multi-select/multi-select.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery.multi-select.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.quicksearch.js")" type="text/javascript"></script>
+}
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "ProblemsManagement" }, null) > 
+    @Html.ActionLink("Задачи", "Index", "Problem", new { page = 1, pageSize = 25, searchTerm = "", filterBy = "all", area = "ProblemsManagement" }, null) > 
+    Создать задачу
+</div>
+
+<h2>Создать задачу</h2>
+@using (Html.BeginForm("Create", "Problem", FormMethod.Post, new { Area = "ProblemsManagement", enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+        <legend>Введите информацию о задаче</legend>
+
+        <div class="row">
+            @Html.LabelFor(model => model.Name)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Name, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Name, null, new { id = "name-message" })</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.LabelFor(model => model.ProblemTagsList)
+            <div class="inputs">
+                @Html.ListBoxFor(m => m.ProblemTagsListIDs, Model.ProblemTagsList)
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.ProblemTypesList)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.DropDownListFor(model => model.ProblemTypesListID, Model.ProblemTypesList, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.ProblemTypesList)</span>
+            </div>
+        </div>
+
+        <div class="row" name="div_Limmits" id="div_Limits">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.TimeLimit, new { style = "width: 100%" })
+                <div class="inputs" style="width: 100%">
+                    <span class="input_wrapper" style="width: 100%">@Html.TextBoxFor(model => model.TimeLimit, new { @class = "text-box" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.TimeLimit)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.MemoryLimit, new { style = "width: 100%" })
+                <div class="inputs" style="width: 100%">
+                    <span class="input_wrapper" style="width: 100%">@Html.TextBoxFor(model => model.MemoryLimit, new { @class = "text-box" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.MemoryLimit)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.LabelFor(model => model.CheckerList)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.DropDownListFor(model => model.CheckerListID, Model.CheckerList, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.CheckerList)</span>
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Checker, new { type = "file", style = Model.CheckerListID != "other" ? "display: none;" : "" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Checker)</span>
+            </div>
+        </div>
+
+        <div class="row" name="div_@Html.NameFor(model => model.Tests)" id="div_@Html.IdFor(model => model.Tests)">
+            @Html.LabelFor(model => model.Tests)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Tests, new { type = "file" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Tests)</span>
+            </div>
+        </div>
+
+        <div class="row" name="div_@Html.NameFor(model => model.Samples)" id="div_@Html.IdFor(model => model.Samples)">
+            @Html.LabelFor(model => model.Samples)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Samples, new { type = "file" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Samples)</span>
+            </div>
+        </div>
+
+        <div class="row" name="div_@Html.NameFor(model => model.OpenProblemResult)" id="div_@Html.IdFor(model => model.OpenProblemResult)">
+            @Html.LabelFor(model => model.OpenProblemResult)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.OpenProblemResult, new { type = "file" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.OpenProblemResult)</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.CheckBoxFor(model => model.CheckPending, new { @class = "text" })
+            @Html.LabelFor(model => model.CheckPending, new { @class = "checkbox", @style = "width: auto; padding: 0 5px 0 0;" })
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.Description)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextAreaFor(model => model.Description, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Description)</span>
+            </div>
+        </div>
+        
+        <div class="row" name="div_@Html.NameFor(model => model.InputFormat)" id="div_@Html.IdFor(model => model.InputFormat)">
+            @Html.LabelFor(model => model.InputFormat)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextAreaFor(model => model.InputFormat, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.InputFormat)</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.LabelFor(model => model.OutputFormat)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextAreaFor(model => model.OutputFormat, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.OutputFormat)</span>
+            </div>
+        </div>
+
+        <p>
+            <input class="button" type="submit" value="Создать" style="width:150px;"/>
+        </p>
+    </fieldset>
+}
+<fieldset>
+    <legend>Изображения</legend>
+    <div class="row">
+        @using (Html.BeginForm("UploadImage", "Problem", FormMethod.Post, 
+	        new { enctype = "multipart/form-data", id="ImgForm", 
+		        name="ImgForm", target="UploadTarget" }))
+        {
+	        <label for="imageFile">Загрузить изображение</label>
+	        <input type="file" name="imageFile" style="width: 580px"/>
+ 
+	        <input class="button" type="button" value="Загрузить" onclick="UploadImage()" />
+        }
+        <iframe id="UploadTarget" name="UploadTarget" onload="UploadImage_Complete();" style="position: absolute; left: -999em; top: -999em;"></iframe>
+        <div id="Images"><table class="without_border" id="ImagesTable"></table></div>
+    </div>
+</fieldset>
+
+<div>
+    @Html.ActionLink("Вернуться к задачам", "Index", "Problem", new { page = 1, pageSize = 25, searchTerm = "", filterBy = "all", area = "ProblemsManagement" }, null)
+</div>
+
+
+<script type="text/javascript">
+    var isFirstLoad = true;
+
+    function UploadImage() {
+        $("#ImgForm").submit();
+    }
+
+    function UploadImage_Complete() {
+        //Check to see if this is the first load of the iFrame
+        if (isFirstLoad == true) {
+            isFirstLoad = false;
+            //return;
+        }
+
+        //Reset the image form so the file won't get uploaded again
+        document.getElementById("ImgForm").reset();
+
+        //Grab the content of the textarea we named jsonResult .  This shold be loaded into 
+        //the hidden iFrame.
+        var newImg = $.parseJSON($("#UploadTarget").contents().find("#jsonResult")[0].innerHTML);
+
+        //If there was an error, display it to the user
+        if (newImg.IsValid == false) {
+            alert(newImg.Message);
+            return;
+        }
+
+        //Create a new image and insert it into the Images div.  Just to be fancy, 
+        //we're going to use a "FadeIn" effect from jQuery
+        var imgTable = document.getElementById("ImagesTable");
+        var tr = document.createElement('tr');
+
+        var td = document.createElement('td');
+
+        var img = new Image();
+        img.src = newImg.ImagePath;
+        img.width = 100;
+        //Hide the image before adding to the DOM
+        $(img).hide();
+        td.appendChild(img);
+        tr.appendChild(td);
+
+        td = document.createElement('td');
+        var aDescription = document.createElement('a');
+        aDescription.href = "#";
+        aDescription.setAttribute("onclick", "insertAtCaret('@Html.IdFor(model => model.Description)', '[attach=" + newImg.ImagePath + "]');return false;");
+        aDescription.style.display = "block";
+        var linkText = document.createTextNode("Вставить в описание");
+        aDescription.appendChild(linkText);
+        td.appendChild(aDescription);
+        //tr.appendChild(td);
+
+        //td = document.createElement('td');
+        var aInputFormat = document.createElement('a');
+        aInputFormat.href = "#";
+        aInputFormat.id = "aInputFormat";
+        aInputFormat.setAttribute("onclick", "insertAtCaret('@Html.IdFor(model => model.InputFormat)', '[attach=" + newImg.ImagePath + "]');return false;");
+        aInputFormat.style.display = "block";
+        if ($("#@Html.IdFor(model => model.ProblemTypesListID)").val() == "@((int)Solomon.TypesExtensions.ProblemTypes.Open)") {
+            aInputFormat.style.display = "none";
+        }
+        linkText = document.createTextNode("Вставить в формат входных данных");
+        aInputFormat.appendChild(linkText);
+        td.appendChild(aInputFormat);
+        //tr.appendChild(td);
+
+        //td = document.createElement('td');
+        var aOutputFormat = document.createElement('a');
+        aOutputFormat.href = "#";
+        aOutputFormat.setAttribute("onclick", "insertAtCaret('@Html.IdFor(model => model.OutputFormat)', '[attach=" + newImg.ImagePath + "]');return false;");
+        aOutputFormat.style.display = "block";
+        linkText = document.createTextNode("Вставить в формат выходных данных");
+        aOutputFormat.appendChild(linkText);
+        td.appendChild(aOutputFormat);
+        tr.appendChild(td);
+
+        imgTable.appendChild(tr);
+        //Now fade the image in
+        $(img).fadeIn(500, null);
+    }
+
+    function insertAtCaret(areaId, text) {
+        var txtarea = document.getElementById(areaId);
+        var scrollPos = txtarea.scrollTop;
+        var strPos = 0;
+        var br = ((txtarea.selectionStart || txtarea.selectionStart == '0') ?
+            "ff" : (document.selection ? "ie" : false));
+        if (br == "ie") {
+            txtarea.focus();
+            var range = document.selection.createRange();
+            range.moveStart('character', -txtarea.value.length);
+            strPos = range.text.length;
+        }
+        else if (br == "ff") strPos = txtarea.selectionStart;
+
+        var front = (txtarea.value).substring(0, strPos);
+        var back = (txtarea.value).substring(strPos, txtarea.value.length);
+        txtarea.value = front + text + back;
+        strPos = strPos + text.length;
+        if (br == "ie") {
+            txtarea.focus();
+            var range = document.selection.createRange();
+            range.moveStart('character', -txtarea.value.length);
+            range.moveStart('character', strPos);
+            range.moveEnd('character', 0);
+            range.select();
+        }
+        else if (br == "ff") {
+            txtarea.selectionStart = strPos;
+            txtarea.selectionEnd = strPos;
+            txtarea.focus();
+        }
+        txtarea.scrollTop = scrollPos;
+    }
+
+    $(function () {
+        $('#@Html.IdFor(m => m.ProblemTagsListIDs)').multiSelect({
+            selectableHeader: "<input type='text' class='search-input' autocomplete='off' placeholder='Поиск по доступным тегам'>",
+            selectionHeader: "<input type='text' class='search-input' autocomplete='off' placeholder='Поиск по добавленным тегам'>",
+            afterInit: function (ms) {
+                var that = this,
+                    $selectableSearch = that.$selectableUl.prev(),
+                    $selectionSearch = that.$selectionUl.prev(),
+                    selectableSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selectable:not(.ms-selected)',
+                    selectionSearchString = '#' + that.$container.attr('id') + ' .ms-elem-selection.ms-selected';
+
+                that.qs1 = $selectableSearch.quicksearch(selectableSearchString)
+                .on('keydown', function (e) {
+                    if (e.which === 40) {
+                        that.$selectableUl.focus();
+                        return false;
+                    }
+                });
+
+                that.qs2 = $selectionSearch.quicksearch(selectionSearchString)
+                .on('keydown', function (e) {
+                    if (e.which == 40) {
+                        that.$selectionUl.focus();
+                        return false;
+                    }
+                });
+            },
+            afterSelect: function () {
+                this.qs1.cache();
+                this.qs2.cache();
+            },
+            afterDeselect: function () {
+                this.qs1.cache();
+                this.qs2.cache();
+            }
+        });
+
+        SetProblemType();
+
+        // Begin check uniq name functions
+        var msg = $("#name-message");
+        var btn = $("input[type='submit']");
+
+        $("#@Html.IdFor(model => model.Name)").focus();
+
+        $("#@Html.IdFor(model => model.Name)").blur(function () {
+
+            var problemName = $(this).val();
+
+            if (problemName == "") return;
+
+            $.ajax({
+                url: '@Url.Action("CheckForUniqueProblemName", "Problem")',
+                dataType: 'json',
+                type: 'GET',
+                data: { ProblemName: problemName },
+                success: OnCheckForUniqueProblemNameSuccess,
+                error: OnCheckForUniqueProblemNameError
+            });
+        });
+
+        function OnCheckForUniqueProblemNameSuccess(data) {
+            if (data.Exists) {
+                msg.text("Задача с таким именем уже существует. Пожалуйста, введите другое имя.");
+                msg.attr("class", "field-validation-error");
+                btn.attr("disabled", "disabled");
+            } else {
+                msg.text("");
+                msg.attr("class", "field-validation-valid");
+                btn.removeAttr("disabled");
+            }
+        }
+
+        function OnCheckForUniqueProblemNameError(xhr, status, error) {
+            msg.text("Произошла ошибка при проверке уникальности имени.");
+            msg.attr("class", "field-validation-error");
+        }
+        // End check uniq name functions
+
+        $("#@Html.IdFor(model => model.CheckerListID)").change(function () {
+            if ($(this).val() == "other") {
+                $("#@Html.IdFor(model => model.Checker)").show();
+            }
+            else {
+                $("#@Html.IdFor(model => model.Checker)").hide();
+            }
+        });
+
+        $("#@Html.IdFor(model => model.ProblemTypesListID)").change(SetProblemType);
+
+        function SetProblemType() {
+            if ($("#@Html.IdFor(model => model.ProblemTypesListID)").val() == "@((int)Solomon.TypesExtensions.ProblemTypes.Open)") {
+                $("#div_Limits").hide();
+                $("#div_@Html.IdFor(model => model.InputFormat)").hide();
+                $("#div_@Html.IdFor(model => model.Samples)").hide();
+                $("#div_@Html.IdFor(model => model.Tests)").hide();
+                $("#div_@Html.IdFor(model => model.OpenProblemResult)").show();
+                $("#aInputFormat").hide();
+            }
+            else {
+                $("#div_Limits").show();
+                $("#div_@Html.IdFor(model => model.InputFormat)").show();
+                $("#div_@Html.IdFor(model => model.Samples)").show();
+                $("#div_@Html.IdFor(model => model.Tests)").show();
+                $("#div_@Html.IdFor(model => model.OpenProblemResult)").hide();
+                $("#aInputFormat").show();
+            }
+        }
+    });
+
+</script>

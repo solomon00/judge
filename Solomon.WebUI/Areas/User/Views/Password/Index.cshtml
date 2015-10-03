@@ -1,0 +1,91 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.ChangePasswordViewModel
+@{
+    ViewBag.Title = "Сменить пароль";
+    if (Model.CanChangePassword)
+    {
+        Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {    
+        Layout = "~/Areas/User/Views/Shared/_LayoutWithoutPassword.cshtml"; 
+    }
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/ui.datepicker-ru.js")"></script>
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>Вы вошли как <strong>@User.Identity.Name</strong>.</p>
+
+<script>
+    $(function() {
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+<section>
+    @if (Model.CanChangePassword)
+    {
+        using (Html.BeginForm("Index", "Password", FormMethod.Post, new { Area = "User", UserName = WebSecurity.CurrentUserName, enctype = "multipart/form-data" }))
+        {
+        @Html.ValidationSummary()
+        @Html.AntiForgeryToken()
+        <fieldset style="margin-top:0px;">
+            @*first row*@
+            <div class="row">
+                <div style="width: 50%; float: left;">
+                    @Html.LabelFor(model => model.OldPassword)
+                    <div class="inputs">
+                        <span class="input_wrapper">@Html.PasswordFor(model => model.OldPassword, new { @class = "half-text", tabindex = "1" })</span>
+                        <span class="system negative">@Html.ValidationMessageFor(model => model.OldPassword)</span>
+                    </div>
+                </div>
+            </div>
+
+            @*second row*@
+            <div class="row">
+                <div style="width: 50%; float: left;">
+                    @Html.LabelFor(model => model.NewPassword)
+                    <div class="inputs">
+                        <span class="input_wrapper">@Html.PasswordFor(model => model.NewPassword, new { @class = "half-text", tabindex = "2" })</span>
+                        <span class="system negative">@Html.ValidationMessageFor(model => model.NewPassword)</span>
+                    </div>
+                </div>
+            </div>
+
+            @*third row*@
+            <div class="row">
+                <div style="width: 50%; float: left;">
+                    @Html.LabelFor(model => model.ConfirmPassword)
+                    <div class="inputs">
+                        <span class="input_wrapper">@Html.PasswordFor(model => model.ConfirmPassword, new { @class = "half-text", tabindex = "3" })</span>
+                        <span class="system negative">@Html.ValidationMessageFor(model => model.ConfirmPassword)</span>
+                    </div>
+                </div>
+            </div>
+        
+            <p>
+                <input class="button" type="submit" value="Сохранить" />
+            </p>
+
+        </fieldset>
+        }
+    }
+    else
+    {
+        <p>Вы не можете изменять пароль</p>
+    }
+</section>
+

@@ -1,0 +1,62 @@
+﻿@model Solomon.WebUI.Models.LoginViewModel
+
+@{
+    ViewBag.Title = "Авторизация";
+}
+
+@section Scripts 
+{
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+<script type="text/javascript">
+    $(function () {
+        $("#UserName").focus();
+    });
+</script>
+
+<section id="loginForm">
+    <hgroup class="title">
+        <h1>@ViewBag.Title</h1>
+    </hgroup>
+
+    @using (Html.BeginForm(new { ReturnUrl = ViewBag.ReturnUrl }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        <div class="row">
+            @Html.LabelFor(m => m.UserName)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(m => m.UserName, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(m => m.UserName)</span>
+            </div>
+        </div>
+        <div class="row">
+            @Html.LabelFor(m => m.Password)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.PasswordFor(m => m.Password, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(m => m.Password)</span>
+            </div>
+        </div>
+            
+        <div class="row">
+            @Html.CheckBoxFor(model => model.RememberMe, new { @class = "text" })
+            @Html.LabelFor(model => model.RememberMe, new { @class = "checkbox", @style = "width: auto; padding: 0 5px 0 0;" })
+        </div>
+        <p>
+            <input class="button" type="submit" value="Войти" />
+        </p>
+        <p>
+            @Html.ActionLink("Зарегистрироваться", "Register") если у Вас нет аккаунта.
+        </p>
+        <p>
+            @Html.ActionLink("Забыли пароль?", "ResetPassword")
+        </p>
+    }
+</section>
+
+@*<section class="social" id="socialLoginForm">
+    <h2>Use another service to log in.</h2>
+    @Html.Action("ExternalLoginsList", new { ReturnUrl = ViewBag.ReturnUrl })
+</section>*@

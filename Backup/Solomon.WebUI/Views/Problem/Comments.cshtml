@@ -1,0 +1,205 @@
+﻿@model Solomon.WebUI.ViewModels.CommentsViewModel
+
+@{
+    ViewBag.Title = "Обсуждение";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/Comments.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/contextMenu.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/jsMath-3.6e/easy/load.js")"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/contextMenu.js")" type="text/javascript"></script>
+
+        <link href="@Url.Content("~/Content/Progressbar.css")" rel="stylesheet"/>
+}
+
+<script type="text/javascript">
+
+    function cancelAnswer() {
+        $("#CommentsContent").append($("#CommentForm"));
+        $("#CancelAnswer").hide();
+        $("#ParentCommentID").val("");
+    }
+
+    function answer(id)
+    {
+        $("#Comment-" + id).append($("#CommentForm"));
+        
+        $("#Value").focus();
+        $("#Value").val($("#Value").val() + "<b>" + $("#CommentAuthor-" + id).val() + ",</b>" + '\n');
+        
+        $("#CancelAnswer").show();
+        $("#ParentCommentID").val(id);
+    }
+
+    function makePublicPrivate(id) {
+        if ($("#eye-" + id).hasClass("eye_private")) {
+            // make public
+            makePublic(id);
+            $("#eye-" + id).css('background-image', 'url(/Images/eye_public.png)');
+            $("#eye-" + id).removeClass("eye_private");
+            $("#eye-" + id).addClass("eye_public");
+            while ($("#CommentParent-" + id).val() != "") {
+                id = $("#CommentParent-" + id).val();
+                //makePublic(id);
+                $("#eye-" + id).css('background-image', 'url(/Images/eye_public.png)');
+                $("#eye-" + id).removeClass("eye_private");
+                $("#eye-" + id).addClass("eye_public");
+            }
+        } else {
+            makePrivate(id);
+            stack = new Array();
+            stack.push(id);
+            while (stack.length > 0) {
+                id = stack.pop();
+                $("[id=CommentChild-" + id + "]").each(function () {
+                    stack.push($(this).val());
+                });
+                $("#eye-" + id).css('background-image', 'url(/Images/eye_private.png)');
+                $("#eye-" + id).removeClass("eye_public");
+                $("#eye-" + id).addClass("eye_private");
+            }
+        }
+
+    }
+    function makePrivate(id) {
+        $.ajax({
+            url: '@Url.Action("MakeCommentPrivate", controllerName: "Problem")',
+            dataType: 'json',
+            type: 'GET',
+            data: { CommentID: id },
+            success: function (data) {
+                if (data.Success == true) {
+                    toastr.success('Коментарий доступен только участником дискуссии');
+                }
+                else {
+                    toastr.warning('Произошла ошибка при изменении статуса комментария');
+                    toastr.warning(data.Message);
+                }
+            },
+            cache: false
+        });
+    }
+    function makePublic(id) {
+        $.ajax({
+            url: '@Url.Action("MakeCommentPublic", controllerName: "Problem")',
+            dataType: 'json',
+            type: 'GET',
+            data: { CommentID: id },
+            success: function (data) {
+                if (data.Success == true) {
+                    toastr.success('Коментарий доступен всем пользователям');
+                }
+                else {
+                    toastr.warning('Произошла ошибка при изменении статуса комментария');
+                    toastr.warning(data.Message);
+                }
+            },
+            cache: false
+        });
+    }
+
+    function markAsRead(id) {
+        $.ajax({
+            url: '@Url.Action("MarkCommentAsRead", controllerName: "Problem")',
+            dataType: 'json',
+            type: 'GET',
+            data: { CommentID: id },
+            success: function (data) {
+                if (data.Success == true) {
+                    toastr.success('Коментарий помечен как прочитанный');
+                    $("#read-" + id).hide();
+                    $("#Comment-" + id).css('background', 'none');
+                }
+                else {
+                    toastr.warning('Произошла ошибка при изменении статуса комментария');
+                    toastr.warning(data.Message);
+                }
+            },
+            cache: false
+        });
+    }
+
+    $(function () {
+
+    });
+</script>
+
+<div id="timeProgressbar"><span id="timeProgressLabel" class="progress-label" style="min-width:300px; text-align:right;"></span></div>
+
+<div id="dialog" title="Результат тестирования">
+    <div id="solutionTestResults"></div>
+</div>
+    
+<div id="Content" style="margin-left: 0; border: none;">
+    @if (Model.ProblemID != -1)
+    {
+        <div id="breadcrumb">
+            @Html.ActionLink("Вернуться к задаче", "Problem", "Problem", new { ProblemID = Model.ProblemID, TournamentID = Model.TournamentID, Area = "" }, null)
+        </div>
+        
+        <div id="ProblemContent">
+            @{ Html.RenderAction("ProblemContent", "Problem", new { ProblemID = Model.ProblemID }); }
+        </div>
+        
+        <h3>Обсуждение:</h3>
+        <div id="CommentsContent">
+        @if (Model.Comments.Count > 0)
+        {
+            foreach (var comment in Model.Comments)
+            {
+                String eye = comment.Public == 1 ? "eye_public" : "eye_private";
+                String name = (comment.User.SecondName + " " + comment.User.FirstName + " " + comment.User.ThirdName).Trim();
+                String commentBackground = comment.IsNewComment && WebSecurity.IsAuthenticated ? "white" : "none";
+                int marginLeft = comment.Level > 10 ? 10 * 20 : comment.Level * 20;
+                
+                <div id="Comment-@comment.CommentID" class="Comment" style="margin-left: @(marginLeft)px; background: @commentBackground;">
+                    <input type="hidden" id="CommentAuthor-@comment.CommentID" value="@comment.User.UserName" />
+                    @if (Roles.IsUserInRole("Administrator") || Model.ShowAll)
+                    {
+                        <input type="hidden" id="CommentParent-@comment.CommentID" value="@comment.ParentCommentID" />
+                        foreach (var c in comment.ChildComments)
+                        {
+                            <input type="hidden" id="CommentChild-@comment.CommentID" value="@c.CommentID" />
+                        }
+                    }
+                    <div class="CommentHeader">
+                        <b>@comment.User.UserName @(!String.IsNullOrEmpty(name) ? "(" + name + ")" : String.Empty)</b> | @comment.Date.ToString("dd.MM.yyyy") | @comment.Date.ToString("HH:mm:ss") | <a href="#Comment-@comment.CommentID" title="Постоянная ссылка">#</a>
+                        @if (Roles.IsUserInRole("Administrator") || Model.ShowAll)
+                        {
+                        <div style="background-image: url(/Images/@(eye).png);" class="CommentActions eye @eye" onclick="makePublicPrivate(@comment.CommentID);" id="eye-@comment.CommentID">
+                        </div>
+                            if (comment.IsRead == 0)
+                            {
+                            <div style="background-image: url(/Images/glasses.png);" class="CommentActions read" onclick="markAsRead(@comment.CommentID);" id="read-@comment.CommentID">
+                            </div>
+                            }
+                        }
+                    </div>
+                    <div class="CommentContent">
+                        <p>@Html.Raw(comment.Value)</p>
+                    </div>
+                    <div class="CommentAnswer">
+                        <a onclick="answer(@comment.CommentID);">Ответить</a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p>Нет комментариев</p>
+        }
+        
+        @{ Html.RenderAction("AddComment", "Problem", new { Area = "" }); }
+        </div>
+    }
+    else
+    {
+        <p>Произошла ошибка при загрузке задачи.</p>
+    }
+</div>

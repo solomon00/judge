@@ -1,0 +1,683 @@
+﻿@model Solomon.WebUI.Areas.AccountsManagement.ViewModels.GeneratedUsersListViewModel
+
+@{
+    ViewBag.Title = "Сгенерировать аккаунты";
+    Layout = "~/Areas/AccountsManagement/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead {
+        
+        <link href="@Url.Content("~/Content/Progressbar.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/ui.datepicker-ru.js")"></script>
+
+}
+<style>
+    .ui-autocomplete {
+        max-height: 400px;
+        overflow-y: auto;
+        /* prevent horizontal scrollbar */
+        overflow-x: hidden;
+        z-index: 200;
+    }
+    
+    .accountEditProgressBar {
+        position: relative;
+        margin-right: 20px;
+        margin-left: 0px;
+        margin-bottom: -23px;
+        height: 20px;
+    }
+    .accountEditProgressLabel {
+        position: relative;
+        left: 5px;
+        top: -4px;
+        font-weight: 600;
+        text-align: center;
+        /*text-shadow: 1px 1px 0 #fff;*/
+    }
+
+    input[type="checkbox"] {
+        margin-top: 6px;
+    }
+</style>
+<script type="text/javascript">
+
+    var currentAccountID;
+    function showDialog(i) {
+
+        currentAccountID = i;
+
+        $("#@Html.IdFor(m => m.AccountTemplate.BirthDay)").val($("#Accounts_" + i + "__BirthDay").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.CategoryListID)").val($("#Accounts_" + i + "__CategoryListID").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.City)").val($("#Accounts_" + i + "__City").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.CityID)").val($("#Accounts_" + i + "__CityID").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.Country)").val($("#Accounts_" + i + "__Country").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.CountryID)").val($("#Accounts_" + i + "__CountryID").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.FirstName)").val($("#Accounts_" + i + "__FirstName").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.GradeLevel)").val($("#Accounts_" + i + "__GradeLevel").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.Institution)").val($("#Accounts_" + i + "__Institution").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.InstitutionID)").val($("#Accounts_" + i + "__InstitutionID").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.PhoneNumber)").val($("#Accounts_" + i + "__PhoneNumber").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.SecondName)").val($("#Accounts_" + i + "__SecondName").val());
+        $("#@Html.IdFor(m => m.AccountTemplate.ThirdName)").val($("#Accounts_" + i + "__ThirdName").val());
+
+        if ($("#@Html.IdFor(model => model.AccountTemplate.Country)").val() == "")
+            $("#@Html.IdFor(model => model.AccountTemplate.City)").prop('disabled', true);
+        if ($("#@Html.IdFor(model => model.AccountTemplate.City)").val() == "")
+            $("#@Html.IdFor(model => model.AccountTemplate.Institution)").prop('disabled', true);
+
+        $("#editAccountDialog").dialog('open');
+    }
+
+    function progress(i, value) {
+        var progressbar = $("#progressBar" + i);
+        var progressLabel = $("#progressLabel" + i);
+
+        progressbar.width(value * 2);
+
+        if (value == 100) {
+            progressbar.css('background', 'rgba(155, 230, 155, 0.6)');
+        }
+        else if (value > 30) {
+            progressbar.css('background', 'rgba(255, 215, 152, 0.6)');
+        }
+        else {
+            progressbar.css('background', 'rgba(255, 144, 144, 0.6)');
+        }
+
+        progressLabel.text(value + "%");
+    }
+
+    $(function () {
+        // ********************************************************************
+        // Country, city, institution fields
+        // 
+        
+        var countryID = $("#@Html.IdFor(model => model.AccountTemplate.CountryID)").val();
+        var country = $("#@Html.IdFor(model => model.AccountTemplate.Country)").val();
+        var cityID = $("#@Html.IdFor(model => model.AccountTemplate.CityID)").val();
+        var city = $("#@Html.IdFor(model => model.AccountTemplate.City)").val();
+        var institutionID = $("#@Html.IdFor(model => model.AccountTemplate.InstitutionID)").val();
+        var institution = $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val();
+
+        $("#@Html.IdFor(model => model.AccountTemplate.Country)").autocomplete({
+            source: '@Url.Action("Country", "Database", new { Area = "", limit = 10 })',
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.AccountTemplate.Country)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                country = ui.item.label;
+                $("#@Html.IdFor(model => model.AccountTemplate.Country)").val(country);
+                $("#@Html.IdFor(model => model.AccountTemplate.City)").prop('disabled', false);
+
+                $("#@Html.IdFor(model => model.AccountTemplate.CountryID)").val(ui.item.value);
+
+                if (countryID != ui.item.value) {
+                    $("#@Html.IdFor(model => model.AccountTemplate.City)").val("");
+                    $("#@Html.IdFor(model => model.AccountTemplate.CityID)").val("");
+                    $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val("");
+                    $("#@Html.IdFor(model => model.AccountTemplate.InstitutionID)").val("");
+
+                    $("#@Html.IdFor(model => model.AccountTemplate.City)").prop('disabled', false);
+                    $("#@Html.IdFor(model => model.AccountTemplate.Institution)").prop('disabled', true);
+
+                    countryID = ui.item.value;
+                    cityID = null;
+                    city = null;
+                    institutionID = null;
+                    institution = null;
+
+                    $("#@Html.IdFor(model => model.AccountTemplate.City)").autocomplete("option", "source", '@Url.Action("City", "Database", new { Area = "", limit = 20 })&CountryID=' + countryID);
+                    $("#@Html.IdFor(model => model.AccountTemplate.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.AccountTemplate.Country)").val() != "") {
+                        $("#@Html.IdFor(model => model.AccountTemplate.Country)").val(country);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.AccountTemplate.CountryID)").val("");
+                        $("#@Html.IdFor(model => model.AccountTemplate.City)").val("");
+                        $("#@Html.IdFor(model => model.AccountTemplate.CityID)").val("");
+                        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val("");
+                        $("#@Html.IdFor(model => model.AccountTemplate.InstitutionID)").val("");
+
+                        $("#@Html.IdFor(model => model.AccountTemplate.City)").prop('disabled', true);
+                        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").prop('disabled', true);
+
+                        countryID = null;
+                        country = null;
+                        cityID = null;
+                        city = null;
+                        institutionID = null;
+                        institution = null;
+
+                        $("#@Html.IdFor(model => model.AccountTemplate.City)").autocomplete("option", "source", "@Url.Action("City", "Database", new { limit = 20 })&CountryID=" + countryID);
+                        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        });
+        $("#@Html.IdFor(model => model.AccountTemplate.City)").autocomplete({
+            source: '@Url.Action("City", "Database", new { Area = "", limit = 20 })&CountryID=' + countryID,
+            focus: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.AccountTemplate.City)").val(city);
+                return false;
+            },
+            select: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.AccountTemplate.City)").val(city);
+                $("#@Html.IdFor(model => model.AccountTemplate.Institution)").prop('disabled', false);
+
+                $("#@Html.IdFor(model => model.AccountTemplate.CityID)").val(ui.item.value);
+
+                if (cityID != ui.item.value) {
+                    $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val("");
+                    $("#@Html.IdFor(model => model.AccountTemplate.InstitutionID)").val("");
+
+                    $("#@Html.IdFor(model => model.AccountTemplate.Institution)").prop('disabled', false);
+
+                    cityID = ui.item.value;
+                    institutionID = null;
+                    institution = null;
+
+                    $("#@Html.IdFor(model => model.AccountTemplate.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null && $("#@Html.IdFor(model => model.AccountTemplate.City)").val()) {
+                    if ($("#@Html.IdFor(model => model.AccountTemplate.City)").val() != "") {
+                        $("#@Html.IdFor(model => model.AccountTemplate.City)").val(city);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.AccountTemplate.CityID)").val("");
+                        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val("");
+                        $("#@Html.IdFor(model => model.AccountTemplate.InstitutionID)").val("");
+
+                        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").prop('disabled', true);
+
+                        cityID = null;
+                        city = null;
+                        institutionID = null;
+                        institution = null;
+
+                        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .append("<a style=\"padding: 0 .4em;\">" + item.label + "</a>")
+                .appendTo(ul);
+        };
+
+        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").autocomplete({
+            source: '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID,
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                institution = ui.item.label;
+                $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val(institution);
+
+                $("#@Html.IdFor(model => model.AccountTemplate.InstitutionID)").val(ui.item.value);
+
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.AccountTemplate.Institution)").val() != "") {
+                        $("#@Html.IdFor(model => model.AccountTemplate.Institution)").val(institution);
+                    }
+                    else {
+                        institutionID = null;
+                        institution = null;
+                    }
+                }
+                return false;
+            }
+        });
+        //
+        // End country, city, institution fields
+        // ********************************************************************
+
+        $("#@Html.IdFor(model => model.AccountTemplate.BirthDay)").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            //dateFormat: "dd.mm.yy"
+        });
+        $("#@Html.IdFor(model => model.AccountTemplate.BirthDay)").datepicker(
+            $.datepicker.regional["ru"]
+        );
+
+        $.validator.addMethod('date',
+            function (value, element, params) {
+                if (this.optional(element)) {
+                    return true;
+                }
+
+                var ok = true;
+                try {
+                    $.datepicker.parseDate('dd.mm.yy', value);
+                }
+                catch (err) {
+                    ok = false;
+                }
+                return ok;
+            });
+
+        $("#editAccountDialog").dialog({
+            dialogClass: "no-close",
+            autoOpen: false,
+            draggable: false,
+            modal: true,
+            width: 910,
+            height: 460,
+            resizable: false,
+            open: function () {
+                jQuery('.ui-widget-overlay').bind('click', function () {
+                    jQuery('#editAccountDialog').dialog('close');
+                })
+            },
+            buttons: [
+                {
+                    text: "OK",
+                    click: function () {
+                        var birthDay = $("#@Html.IdFor(m => m.AccountTemplate.BirthDay)").val(),
+                            category = $("#@Html.IdFor(m => m.AccountTemplate.CategoryListID)").val(),
+                            cityID = $("#@Html.IdFor(m => m.AccountTemplate.CityID)").val(),
+                            countryID = $("#@Html.IdFor(m => m.AccountTemplate.CountryID)").val(),
+                            firstName = $("#@Html.IdFor(m => m.AccountTemplate.FirstName)").val(),
+                            gradeLevel = $("#@Html.IdFor(m => m.AccountTemplate.GradeLevel)").val(),
+                            institutionID = $("#@Html.IdFor(m => m.AccountTemplate.InstitutionID)").val(),
+                            phoneNumber = $("#@Html.IdFor(m => m.AccountTemplate.PhoneNumber)").val(),
+                            secondName = $("#@Html.IdFor(m => m.AccountTemplate.SecondName)").val(),
+                            thirdName = $("#@Html.IdFor(m => m.AccountTemplate.ThirdName)").val();
+                        
+                        var progressValue = (birthDay != "" ? 1 : 0) +
+                            (category != "0" ? 1 : 0) +
+                            (cityID != "" ? 1 : 0) +
+                            (countryID != "" ? 1 : 0) +
+                            (firstName != "" ? 1 : 0) +
+                            (gradeLevel != "" ? 1 : 0) +
+                            (institutionID != "" ? 1 : 0) +
+                            (phoneNumber != "" ? 1 : 0) +
+                            (secondName != "" ? 1 : 0) +
+                            (thirdName != "" ? 1 : 0);
+
+                        progress(currentAccountID, progressValue * 10);
+
+                        $("#Accounts_" + currentAccountID + "__BirthDay").val(birthDay);
+                        $("#Accounts_" + currentAccountID + "__CategoryListID").val(category);
+                        $("#Accounts_" + currentAccountID + "__City").val($("#@Html.IdFor(m => m.AccountTemplate.City)").val());
+                        $("#Accounts_" + currentAccountID + "__CityID").val(cityID);
+                        $("#Accounts_" + currentAccountID + "__Country").val($("#@Html.IdFor(m => m.AccountTemplate.Country)").val());
+                        $("#Accounts_" + currentAccountID + "__CountryID").val(countryID);
+                        $("#Accounts_" + currentAccountID + "__FirstName").val(firstName);
+                        $("#Accounts_" + currentAccountID + "__GradeLevel").val(gradeLevel);
+                        $("#Accounts_" + currentAccountID + "__Institution").val($("#@Html.IdFor(m => m.AccountTemplate.Institution)").val());
+                        $("#Accounts_" + currentAccountID + "__InstitutionID").val(institutionID);
+                        $("#Accounts_" + currentAccountID + "__PhoneNumber").val(phoneNumber);
+                        $("#Accounts_" + currentAccountID + "__SecondName").val(secondName);
+                        $("#Accounts_" + currentAccountID + "__ThirdName").val(thirdName);
+                        $(this).dialog("close");
+                    }
+                }
+            ]
+        });
+
+        function progress(i, value) {
+            var progressbar = $("#progressBar" + i);
+            var progressLabel = $("#progressLabel" + i);
+
+            progressbar.width(value * 2);
+
+            if (value == 100) {
+                progressbar.css('background', 'rgba(155, 230, 155, 0.6)');
+            }
+            else if (value > 30) {
+                progressbar.css('background', 'rgba(255, 215, 152, 0.6)');
+            }
+            else {
+                progressbar.css('background', 'rgba(255, 144, 144, 0.6)');
+            }
+
+            progressLabel.text(value + "%");
+        }
+    });
+</script>
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "AccountsManagement" }, null) > 
+    @Html.ActionLink("Пользователи", "Index", "Membership", new { Area = "AccountsManagement" }, null) > 
+    Сгенерировать аккаунты
+</div>
+
+<h2>Генерация аккаунтов</h2>
+
+@if (Model.Generated == false)
+{
+    using (Html.BeginForm("ConfirmGenerateUsers", "Membership", FormMethod.Post, new { Area = "AccountsManagement", enctype = "multipart/form-data" }))
+    {
+        <h3>Будут созданы следующие аккаунты</h3>
+        <div class="section_inner">
+            <div class="table_wrapper">
+                <div class="table_wrapper_inner">
+                    <table cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                            <th>Логин</th>
+                            <th>ФИО</th>
+                            <th>Пароль</th>
+                            <th style="width: 200px;">Заполненность профиля</th>
+                        </tr>
+                        @for (int i = 0; i < Model.Accounts.Count; i++)
+                        {
+                            <tr>
+                                <td>@Model.Accounts[i].UserName</td>
+                                <td>@Model.Accounts[i].SecondName @Model.Accounts[i].FirstName @Model.Accounts[i].ThirdName</td>
+                                <td>@Model.Accounts[i].Password</td>
+                                <td>
+                                    <div id="progressBar@(i)" class="accountEditProgressBar" style="width: 180px;">
+                                        <span id="progressLabel@(i)" class="accountEditProgressLabel"></span>
+                                    </div>
+                                    <script type="text/javascript">
+                                        progress('@i', 30);
+                                    </script>
+                                    <div style="float: right; padding: 0 2px 0 2px; margin-bottom: -3px;">
+                                        <img src="~/Images/edit-icon.png" style="width: 12px; height: 12px;" onclick="showDialog(@i);" title="Редактировать" />
+                                    </div>
+                                    @Html.HiddenFor(m => m.Accounts[i].BirthDay)
+                                    @Html.HiddenFor(m => m.Accounts[i].CategoryList)
+                                    @Html.HiddenFor(m => m.Accounts[i].CategoryListID)
+                                    @Html.HiddenFor(m => m.Accounts[i].City)
+                                    @Html.HiddenFor(m => m.Accounts[i].CityID)
+                                    @Html.HiddenFor(m => m.Accounts[i].Country)
+                                    @Html.HiddenFor(m => m.Accounts[i].CountryID)
+                                    @Html.HiddenFor(m => m.Accounts[i].FirstName)
+                                    @Html.HiddenFor(m => m.Accounts[i].GradeLevel)
+                                    @Html.HiddenFor(m => m.Accounts[i].Institution)
+                                    @Html.HiddenFor(m => m.Accounts[i].InstitutionID)
+                                    @Html.HiddenFor(m => m.Accounts[i].Password)
+                                    @Html.HiddenFor(m => m.Accounts[i].PhoneNumber)
+                                    @Html.HiddenFor(m => m.Accounts[i].SecondName)
+                                    @Html.HiddenFor(m => m.Accounts[i].ThirdName)
+                                    @Html.HiddenFor(m => m.Accounts[i].UserName)
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            @Html.LabelFor(model => model.TournamentList)
+            <div class="inputs" style="width: 760px;">
+                <span class="input_wrapper" style="width: 740px;">@Html.DropDownListFor(model => model.TournamentID, Model.TournamentList, new { @class = "text", @style = "width: 100%;" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.TournamentList)</span>
+            </div>
+        </div>
+    
+        <p>
+            <input class="button" type="submit" name="Generate" value="Создать" />&nbsp;
+            <input type="submit" value="Отмена" name="Cancel" class="button cancel"/>
+        </p>
+    
+    }
+}
+else
+{
+    <script type="text/javascript">
+        $(function () {
+            $("#@Html.IdFor(m => m.AccountTemplate.BirthDay)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.CategoryListID)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.City)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.CityID)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.Country)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.CountryID)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.FirstName)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.GradeLevel)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.Institution)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.InstitutionID)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.PhoneNumber)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.SecondName)").prop('disabled', true);
+            $("#@Html.IdFor(m => m.AccountTemplate.ThirdName)").prop('disabled', true);
+
+            $("#exportToExcel").accordion({
+                collapsible: true,
+                active: false
+            });
+        });
+    </script>
+    
+    <h3>Аккаунты  сгенерированы @if (Model.RegisteredForTournament)
+                                {<text>и зарегистринованы на турнир:</text><br />@Html.ActionLink(Model.TournamentName, "Problem", "Problem", new { Area = "", TournamentID = Model.TournamentID }, null)}</h3>
+    <p>Пожалуйста, сохраните данную таблицу.</p>
+    <div class="section_inner">
+        @using (Html.BeginForm("ExportToExcel", "Membership", FormMethod.Post, new { tournamentID = Model.TournamentID, area = "AccountsManagement", enctype = "multipart/form-data" }))
+        {
+        <div id="exportToExcel" style="text-align:left;">
+            <h3>Экспортировать в excel</h3>
+            <div>
+                <label><strong>Включить следующие поля</strong></label>
+                <table class="without_border" style="text-align:left;">
+                    <tr class="row">
+                        <td><input type="checkbox" name="IncludeUserName" checked="checked" /></td>
+                        <td><label>Логин</label></td>
+                        <td><input type="checkbox" name="IncludeCountry" /></td>
+                        <td><label>Страна</label></td>
+                    </tr>
+                    <tr class="row">
+                        <td><input type="checkbox" name="IncludePassword" /></td>
+                        <td><label>Пароль</label></td>
+                        <td><input type="checkbox" name="IncludeCity" /></td>
+                        <td><label>Город</label></td>
+                    </tr>
+                    <tr class="row">
+                        <td><input type="checkbox" name="IncludeFIO" /></td>
+                        <td><label>ФИО</label></td>
+                        <td><input type="checkbox" name="IncludeInstitution" /></td>
+                        <td><label>Образовательное учреждение (организация)</label></td>
+                    </tr>
+                    <tr class="row">
+                        <td><input type="checkbox" name="IncludeBirthDay" /></td>
+                        <td><label>Дата рождения</label></td>
+                        <td><input type="checkbox" name="IncludeCategory" /></td>
+                        <td><label>Категория (школьник, студент, преподаватель, ...)</label></td>
+                    </tr>
+                    <tr class="row">
+                        <td><input type="checkbox" name="IncludePhoneNumber" /></td>
+                        <td><label>Номер телефона</label></td>
+                        <td><input type="checkbox" name="IncludeGradeLevel" /></td>
+                        <td><label>Год обучения</label></td>
+                    </tr>
+                </table>
+                <p>
+                    <input class="button" type="submit" value="Экспортировать" style="width:150px;"/>
+                </p>
+            </div>
+        </div>
+        <div class="table_wrapper">
+            <div class="table_wrapper_inner">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <th>Логин</th>
+                        <th>ФИО</th>
+                        <th>Пароль</th>
+                        <th style="width: 200px;">Профиль</th>
+                    </tr>
+                    @for (int i = 0; i < Model.Accounts.Count; i++)
+                    {
+                        <tr>
+                            <td>@Model.Accounts[i].UserName</td>
+                            <td>@Model.Accounts[i].SecondName @Model.Accounts[i].FirstName @Model.Accounts[i].ThirdName</td>
+                            <td>@Model.Accounts[i].Password</td>
+                            <td>
+                                <div id="progressBar@(i)" class="accountEditProgressBar" style="width: 180px;">
+                                    <span id="progressLabel@(i)" class="accountEditProgressLabel"></span>
+                                </div>
+                                <div style="float: right; padding: 0 2px 0 2px; margin-bottom: -3px;">
+                                    <img src="~/Images/view-details-icon.png" style="width: 12px; height: 12px;" onclick="showDialog(@i);" title="Просмотреть" />
+                                </div>
+                                @Html.HiddenFor(m => m.Accounts[i].BirthDay)
+                                @Html.HiddenFor(m => m.Accounts[i].CategoryList)
+                                @Html.HiddenFor(m => m.Accounts[i].CategoryListID)
+                                @Html.HiddenFor(m => m.Accounts[i].City)
+                                @Html.HiddenFor(m => m.Accounts[i].CityID)
+                                @Html.HiddenFor(m => m.Accounts[i].Country)
+                                @Html.HiddenFor(m => m.Accounts[i].CountryID)
+                                @Html.HiddenFor(m => m.Accounts[i].FirstName)
+                                @Html.HiddenFor(m => m.Accounts[i].GradeLevel)
+                                @Html.HiddenFor(m => m.Accounts[i].Institution)
+                                @Html.HiddenFor(m => m.Accounts[i].InstitutionID)
+                                @Html.HiddenFor(m => m.Accounts[i].Password)
+                                @Html.HiddenFor(m => m.Accounts[i].PhoneNumber)
+                                @Html.HiddenFor(m => m.Accounts[i].SecondName)
+                                @Html.HiddenFor(m => m.Accounts[i].ThirdName)
+                                @Html.HiddenFor(m => m.Accounts[i].UserName)
+                                <script type="text/javascript">
+                                    var birthDay = $("#@Html.IdFor(m => m.Accounts[i].BirthDay)").val(),
+                                        category = $("#@Html.IdFor(m => m.Accounts[i].CategoryListID)").val(),
+                                        cityID = $("#@Html.IdFor(m => m.Accounts[i].CityID)").val(),
+                                        countryID = $("#@Html.IdFor(m => m.Accounts[i].CountryID)").val(),
+                                        firstName = $("#@Html.IdFor(m => m.Accounts[i].FirstName)").val(),
+                                        gradeLevel = $("#@Html.IdFor(m => m.Accounts[i].GradeLevel)").val(),
+                                        institutionID = $("#@Html.IdFor(m => m.Accounts[i].InstitutionID)").val(),
+                                        phoneNumber = $("#@Html.IdFor(m => m.Accounts[i].PhoneNumber)").val(),
+                                        secondName = $("#@Html.IdFor(m => m.Accounts[i].SecondName)").val(),
+                                        thirdName = $("#@Html.IdFor(m => m.Accounts[i].ThirdName)").val();
+
+                                    var progressValue = (birthDay != "" ? 1 : 0) +
+                                        (category != "0" ? 1 : 0) +
+                                        (cityID != "" ? 1 : 0) +
+                                        (countryID != "" ? 1 : 0) +
+                                        (firstName != "" ? 1 : 0) +
+                                        (gradeLevel != "" ? 1 : 0) +
+                                        (institutionID != "" ? 1 : 0) +
+                                        (phoneNumber != "" ? 1 : 0) +
+                                        (secondName != "" ? 1 : 0) +
+                                        (thirdName != "" ? 1 : 0);
+
+                                    progress('@i', progressValue * 10);
+                                </script>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+        }
+    </div>
+}
+
+
+<div id="editAccountDialog" title="Прифиль">
+    <section id="manageForm">
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.AccountTemplate.SecondName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.SecondName, new { @class = "text", tabindex = "1", value = "123" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.SecondName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 51%;">
+                @Html.LabelFor(model => model.AccountTemplate.Country)
+                @Html.HiddenFor(model => model.AccountTemplate.CountryID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.Country, new { @class = "text", tabindex = "6" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.Country)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.AccountTemplate.FirstName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.FirstName, new { @class = "text", tabindex = "2" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.FirstName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 51%;">
+                @Html.LabelFor(model => model.AccountTemplate.City)
+                @Html.HiddenFor(model => model.AccountTemplate.CityID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.City, new { @class = "text", tabindex = "7" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.City)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.AccountTemplate.ThirdName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.ThirdName, new { @class = "text", tabindex = "3" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.ThirdName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 51%;">
+                @Html.LabelFor(model => model.AccountTemplate.Institution)
+                @Html.HiddenFor(model => model.AccountTemplate.InstitutionID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.Institution, new { @class = "text", tabindex = "8" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.Institution)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.AccountTemplate.BirthDay)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.BirthDay, new { data_val_date = "Пожалуйста, введите дату в формате dd.mm.yyyy", @class = "text", tabindex = "4" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.BirthDay)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 51%;">
+                @Html.LabelFor(model => model.AccountTemplate.CategoryList)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.DropDownListFor(model => model.AccountTemplate.CategoryListID, Model.AccountTemplate.CategoryList, new { @class = "text", tabindex = "9" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.CategoryList)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.AccountTemplate.PhoneNumber)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.PhoneNumber, new { @class = "text", tabindex = "5" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.AccountTemplate.PhoneNumber)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 51%;">
+                @Html.LabelFor(model => model.AccountTemplate.GradeLevel)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.AccountTemplate.GradeLevel, new { @class = "text", tabindex = "10" })</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

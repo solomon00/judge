@@ -1,0 +1,193 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.AllCommentsViewModel
+@{
+    ViewBag.Title = "Все комментарии";
+    Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Все комментарии</h2>
+
+
+@if (Model.PaginatedCommentList != null)
+{
+    if (Model.PaginatedCommentList.Count == 0)
+    {
+    <p>
+        Ничего не найдено.
+    </p>
+    }
+    else
+    {
+    <text>Записей: @Model.PaginatedCommentList.TotalCount.ToString()</text>
+    <div class="section_inner">
+        <div class="table_wrapper table_minimal">
+            <div class="table_wrapper_inner">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tbody>
+                        <tr>
+                            <th>ID</th>
+                            <th>T Id</th>
+                            <th>P Id</th>
+                            <th>Сообщение</th>
+                            <th style="width: 130px;">Дата</th>
+                        </tr>
+                        @foreach (Solomon.Domain.Entities.Comment item in Model.PaginatedCommentList)
+                        {
+                            <tr>
+                                <td>@item.CommentID</td>
+                                <td>@item.TournamentID</td>
+                                <td>@Html.ActionLink(item.ProblemID.ToString(), "Comments", "Problem", new { ProblemID = @item.Problem.ProblemID, TournamentID = @item.Tournament.TournamentID, Area = "" }, null)</td>
+                                <td>@Html.Raw(item.Value)</td>
+                                <td>@item.Date</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+	<!--[if !IE]>start pagination<![endif]-->
+	<div class="pagination">
+                    
+		<span class="page_no">Страница @Model.PaginatedCommentList.PageIndex из @Model.PaginatedCommentList.TotalPages</span>
+						
+		<ul class="pag_list">
+            <li>
+            @if (Model.PaginatedCommentList.HasPreviousPage)
+            {
+                @Html.ActionLink("Первая", "AllComments", "Discussions",
+                routeValues: new
+                {
+                    page = 1,
+                    pageSize = Model.PaginatedCommentList.PageSize,
+                    UserName = WebSecurity.CurrentUserName
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Первая</text>
+            }
+            </li>
+			<li>
+            @if (Model.PaginatedCommentList.HasPreviousPage)
+            {
+                @Html.ActionLink("Предыдущая", "AllComments", "Discussions",
+                routeValues: new
+                {
+                    page = Model.PaginatedCommentList.PageIndex - 1,
+                    pageSize = Model.PaginatedCommentList.PageSize,
+                    UserName = WebSecurity.CurrentUserName
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Предыдущая</text>
+            }
+            </li>
+
+
+            <li>
+                <select id="pageIndex" name="pageIndex">
+                @for (int i = 0; i < Model.PaginatedCommentList.TotalPages; i++)
+                {
+                    <option value="@((i + 1).ToString())" 
+                        @if (Model.PaginatedCommentList.PageIndex == i + 1)
+                        {<text>selected="selected"</text>}>@((i + 1).ToString())</option>
+                }
+                </select>
+            </li>
+
+			<li>
+            @if (Model.PaginatedCommentList.HasNextPage)
+            {
+                @Html.ActionLink("Следующая", "AllComments", "Discussions",
+                routeValues: new
+                {
+                    page = Model.PaginatedCommentList.PageIndex + 1,
+                    pageSize = Model.PaginatedCommentList.PageSize,
+                    UserName = WebSecurity.CurrentUserName
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Следующая</text>
+            }
+            </li>
+            <li>
+            @if (Model.PaginatedCommentList.HasNextPage)
+            {
+                @Html.ActionLink("Последняя", "AllComments", "Discussions",
+                routeValues: new
+                {
+                    page = Model.PaginatedCommentList.TotalPages,
+                    pageSize = Model.PaginatedCommentList.PageSize,
+                    UserName = WebSecurity.CurrentUserName
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Последняя</text>
+            }
+            </li>
+		</ul>
+
+        <div id="page-size">
+        Записей на странице: <select id="pageSize" name="pageSize">
+        <option value="25" @if (Model.PageSize == 25)
+                           {<text>selected="selected"</text>}>25</option>
+        <option value="50" @if (Model.PageSize == 50)
+                           {<text>selected="selected"</text>}>50</option>
+        <option value="100" @if (Model.PageSize == 100)
+                            {<text>selected="selected"</text>}>100</option>
+        </select>
+        </div>
+
+	</div>
+	<!--[if !IE]>end pagination<![endif]-->       
+    }
+}
+<script type="text/javascript">
+
+    $(function () {
+        
+        /**************************************************
+        * Begin PageIndex functions
+        *
+        * This handles the page index selected change functions.
+        **************************************************/
+
+        $("#pageIndex").change(function () {
+            var pageIndexVal = '?page=' + $("option:selected", this).val();
+            var pageSizeVal = '&pageSize=' + $("#pageSize option:selected").val();
+            location.href = '/User/@(WebSecurity.CurrentUserName)/Discussions/AllComments' + pageIndexVal + pageSizeVal;
+        });
+
+        /**************************************************
+        * End PageIndex functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin PageSize functions
+        *
+        * This handles the page size selected change functions.
+        **************************************************/
+
+        $("#pageSize").change(function () {
+            var pageSizeVal = '?pageSize=' + $("option:selected", this).val();
+            location.href = '/User/@(WebSecurity.CurrentUserName)/Discussions/AllComments' + pageSizeVal;
+        });
+
+        /**************************************************
+        * End PageSize functions
+        **************************************************/
+
+
+    });
+
+</script>

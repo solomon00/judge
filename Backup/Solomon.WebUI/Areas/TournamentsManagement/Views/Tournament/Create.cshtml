@@ -1,0 +1,194 @@
+﻿@model Solomon.WebUI.Areas.TournamentsManagement.ViewModels.NewTournamentViewModel
+
+@{
+    ViewBag.Title = "Создать турнир";
+    Layout = "~/Areas/TournamentsManagement/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/ui.datepicker-ru.js")"></script>
+
+        <script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+}
+
+<script>
+    $(function () {
+        $("#StartDate").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            //dateFormat: "dd.mm.yy"
+        });
+        $("#StartDate").datepicker(
+            $.datepicker.regional["ru"]
+        );
+        $("#EndDate").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            //dateFormat: "dd.mm.yy"
+        });
+        $("#EndDate").datepicker(
+            $.datepicker.regional["ru"]
+        );
+
+        $.validator.addMethod('date',
+            function (value, element, params) {
+                if (this.optional(element)) {
+                    return true;
+                }
+
+                var ok = true;
+                try {
+                    $.datepicker.parseDate('dd.mm.yy', value);
+                }
+                catch (err) {
+                    ok = false;
+                }
+                return ok;
+            });
+    });
+</script>
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "TournamentsManagement" }) > 
+    @Html.ActionLink("Турниры", "Index", "Tournament", new { Area = "TournamentsManagement" }, null) > 
+    Создать турнир
+</div>
+
+<h2>Создать турнир</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+        <legend>Введите информацию о турнире</legend>
+
+        <div class="row">
+            @Html.LabelFor(model => model.Name)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Name, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Name, null, new { id = "name-message" })</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.LabelFor(model => model.TournamentTypesList)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.DropDownListFor(model => model.TournamentTypesListID, Model.TournamentTypesList, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.TournamentTypesList)</span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.TournamentFormatsList)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.DropDownListFor(model => model.TournamentFormatsListID, Model.TournamentFormatsList, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.TournamentFormatsList)</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.StartDate, new { style = "width: 100%" })
+                <div class="inputs" style="width: 100%">
+                    <span class="input_wrapper" style="width: 100%">@Html.TextBoxFor(model => model.StartDate, new { @Value = Model.StartDate.ToString("dd.MM.yyyy"), @class = "text-box" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.StartDate)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.StartTime, new { style = "width: 100%" })
+                <div class="inputs" style="width: 100%">
+                    <span class="input_wrapper" style="width: 100%">@Html.TextBoxFor(model => model.StartTime, new { @Value = Model.StartTime.ToString("HH:mm"), @class = "text-box" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.StartTime)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.EndDate, new { style = "width: 45%" })
+                <div class="inputs" style="width: 100%">
+                    <span class="input_wrapper" style="width: 100%">@Html.TextBoxFor(model => model.EndDate, new { @Value = Model.EndDate.ToString("dd.MM.yyyy"), @class = "text-box" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.EndDate)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.EndTime, new { style = "width: 45%" })
+                <div class="inputs" style="width: 100%">
+                    <span class="input_wrapper" style="width: 100%">@Html.TextBoxFor(model => model.EndTime, new { @Value = Model.EndTime.ToString("HH:mm"), @class = "text-box" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.EndTime)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.CheckBoxFor(model => model.ShowSolutionSendingTime, new { @class = "text" })
+            @Html.LabelFor(model => model.ShowSolutionSendingTime, new { @class = "checkbox", @style = "width: auto; padding: 0 5px 0 0;" })
+        </div>
+        <div class="row">
+            @Html.CheckBoxFor(model => model.ShowTimer, new { @class = "text" })
+            @Html.LabelFor(model => model.ShowTimer, new { @class = "checkbox", @style = "width: auto; padding: 0 5px 0 0;" })
+        </div>
+
+        <p>
+            <input class="button" type="submit" value="Создать" />
+        </p>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Вернуться к турнирам", "Index", "Tournament", new { page = 1, pageSize = 25, searchTerm = "", filterBy = "all", area = "TournamentsManagement" }, null)
+</div>
+
+
+<script type="text/javascript">
+
+    $(function () {
+
+        var msg = $("#name-message");
+        var btn = $("input[type='submit']");
+
+        $("#Name").focus();
+
+        $("#Name").blur(function () {
+
+            var tournamentName = $(this).val();
+
+            if (tournamentName == "") return;
+
+            $.ajax({
+                url: '@Url.Action("CheckForUniqueTournamentName", "Tournament")',
+                dataType: 'json',
+                type: 'GET',
+                data: { TournamentName: tournamentName },
+                success: OnCheckForUniqueTournamentNameSuccess,
+                error: OnCheckForUniqueTournamentNameError
+            });
+        });
+
+        function OnCheckForUniqueTournamentNameSuccess(data) {
+            if (data.Exists) {
+                msg.text("Турнир с таким именем уже существует. Пожалуйста, введите другое имя.");
+                msg.attr("class", "field-validation-error");
+                btn.attr("disabled", "disabled");
+            } else {
+                msg.text("");
+                msg.attr("class", "field-validation-valid");
+                btn.removeAttr("disabled");
+            }
+        }
+
+        function OnCheckForUniqueTournamentNameError(xhr, status, error) {
+            msg.text("Произошла ошибка при проверке уникальности имени.");
+            msg.attr("class", "field-validation-error");
+        }
+    });
+
+</script>

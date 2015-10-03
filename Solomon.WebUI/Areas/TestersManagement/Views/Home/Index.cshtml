@@ -1,0 +1,119 @@
+﻿@model Solomon.WebUI.Areas.TestersManagement.ViewModels.HomeViewModel
+@{
+    ViewBag.Title = "Управление тестерами";
+    Layout = "~/Areas/TestersManagement/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/ui.datepicker-ru.js")"></script>
+}
+
+<script>
+    $(function () {
+        $("#logFileByDay").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            //dateFormat: "dd.mm.yy"
+        });
+        $("#logFileByDay").datepicker(
+            $.datepicker.regional["ru"]
+        );
+        $("#logFileByMonth").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            dateFormat: 'mm.yy',
+            onClose: function (dateText, inst) {
+                var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+                var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+                $(this).datepicker('setDate', new Date(year, month, 1));
+            }
+        });
+        $("#logFileByMonth").datepicker(
+            $.datepicker.regional["ru"]
+        );
+
+        $('#getLogFileByDayLink').click(function () {
+            this.href = this.href.replace( /\?.*/, '' );
+            this.href = this.href + '?Date=' + $('#logFileByDay').val() + '&logBy=Day';
+        });
+
+        $('#getLogFileByMonthLink').click(function () {
+            this.href = this.href.replace(/\?.*/, '');
+            this.href = this.href + '?Date=' + $('#logFileByMonth').val() + '&logBy=Month';
+        });
+
+    });
+</script>
+
+<h2>
+    Управление серверами
+</h2>
+<div class="fl w48pc mr20">
+    <fieldset>
+        <legend>Информация о тестерах</legend>
+        <table>
+            <tr>
+                <td>Всего тестирующих серверов:</td>
+                <td>@Model.TotalTestersCount</td>
+            </tr>
+        </table>
+    </fieldset>
+    <fieldset>
+        <legend>Информация о сервере</legend>
+        <table>
+            <tr>
+                <td>Host name:</td>
+                <td>@Model.HostName</td>
+            </tr>
+            <tr>
+                <td>Address:</td>
+                <td>@foreach (var a in Model.LocalAddress)
+                    { @a <br /> }</td>
+            </tr>
+        </table>
+        @if (User.IsInRole("Administrator"))
+        {
+        <table class="without_border">
+            <tr>
+                <td>@Html.ActionLink("Скачать лог за день", "GetLogFile", "Home", new { area = "TestersManagement" }, new { id = "getLogFileByDayLink" })</td>
+                <td>@Html.TextBox("logFileByDay", DateTime.Now.ToString("dd.MM.yyyy"), new { id = "logFileByDay", @style = "width:200px" })</td>
+            </tr>
+            <tr>
+                <td>@Html.ActionLink("Скачать лог за месяц", "GetLogFile", "Home", new { area = "TestersManagement" }, new { id = "getLogFileByMonthLink" })</td>
+                <td>@Html.TextBox("logFileByMonth", DateTime.Now.ToString("MM.yyyy"), new { id = "logFileByMonth", @style = "width:200px" })</td>
+            </tr>
+        </table>
+        }
+    </fieldset>
+    <fieldset>
+        <legend>Информация о сокет подключении</legend>
+        <table>
+            <tr>
+                <td>Address:</td>
+                <td>@Model.LocalAddress[0]</td>
+            </tr>
+            <tr>
+                <td>Port:</td>
+                <td>@Model.PortListen</td>
+            </tr>
+        </table>
+        <p>Если тестер не может подключиться к серверу, проверьте, что</p>
+        <ul>
+            <li>IP адрес сервера (@Model.LocalAddress[0]) доступен с тестера</li>
+            <li>Порт @Model.PortListen открыт в firewall сервера и доступен с тестера</li>
+            <li>В конфигурации тестера верно указаны IP адрес (@Model.LocalAddress[0]) и порт (@Model.PortListen)</li>
+        </ul>
+        <p>
+            *Доступность сервера можно проверить командой <i>telnet @Model.LocalAddress[0] @Model.PortListen</i> <br />
+            *Если порт @Model.PortListen уже занят, его значение можно изменить в конфигурационном файле
+
+        </p>
+    </fieldset>
+</div>

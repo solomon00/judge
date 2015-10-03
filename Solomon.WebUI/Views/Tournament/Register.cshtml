@@ -1,0 +1,28 @@
+﻿@model Solomon.WebUI.ViewModels.RegisterForTournamentViewModel
+
+@{
+    ViewBag.Title = "Регистрация на участие в турнире";
+}
+
+<div style="text-align: center;">
+    <h3>Регистрация на турнир:</h3>
+    <h2>@Model.tournament.Name</h2>
+    <h3>Время проведения: с @Model.tournament.StartDate до @Model.tournament.EndDate</h3>
+    @using (Html.BeginForm("Register", "Tournament", 
+        new { ReturnUrl = ViewBag.ReturnUrl, TournamentID = Model.tournament.TournamentID }, 
+        FormMethod.Post, 
+        new { Area = "", enctype = "multipart/form-data" }))
+    {
+    <div class="row">
+        @Html.Label("Принять участие:", new { @for = Model.TeamList, @style = "width: 200px;" })
+        <div class="inputs" style="width: 760px;">
+            <span class="input_wrapper">@Html.DropDownListFor(model => model.UserProfileTeamID, Model.TeamList, new { @class = "text", @style = "width: 100%;" })</span>
+            <span class="system negative">@Html.ValidationMessageFor(model => model.TeamList)</span>
+        </div>
+    </div>
+    <p style="text-align: center;">
+        <input class="button" type="submit" value="Зарегистрироваться" name="Register" />
+        <input class="button" type="submit" value="Отмена" name="Cancel" />
+    </p>
+    }
+</div>

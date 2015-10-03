@@ -1,0 +1,263 @@
+﻿@model Solomon.WebUI.Areas.TestersManagement.ViewModels.SolutionsViewModel
+
+@{
+    ViewBag.Title = "Решения";
+    Layout = "~/Areas/TestersManagement/Views/Shared/_Layout.cshtml";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/Problem.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/Pagination.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/contextMenu.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/contextMenu.js")" type="text/javascript"></script>
+}
+
+<script type="text/javascript">
+
+    var timer;
+    var reloadTable = function () {
+        $.ajax({
+            url: '@Url.Action("GetSolutionsData", "Tester", new { Area = "TestersManagement" })',
+            dataType: 'json',
+            type: 'GET',
+            data: { page: '@Model.PageIndex', pageSize: '@Model.PageSize' },
+            success: function (data) {
+                $('#solutionsData').html(data.HtmlTable);
+            },
+            cache: false
+        });
+    }
+    function beginReloadTable() {
+        reloadTable();
+        timer = setInterval(reloadTable, 5000);
+    }
+
+    beginReloadTable();
+
+
+    function changeSolutionStatus(solutionID, status) {
+        $.ajax({
+            url: '@Url.Action("ChangeSolutionStatus", "Problem", new { Area = "" })',
+            dataType: 'json',
+            type: 'GET',
+            data: { solutionID: solutionID, result: status },
+            success: function (data) {
+                if (data.Success == true) {
+                    toastr.success('Статус решения успешно изменен');
+                }
+                else {
+                    toastr.warning('Произошла ошибка при изменении статуса решения');
+                    toastr.warning(data.Message);
+                }
+            },
+            cache: false
+        });
+    }
+
+    function showDialog(id) {
+        $("#solutionTestResults").html("");
+        $.ajax({
+            url: '@Url.Action("GetSolutionResults", "Problem", new { Area = "" })',
+            dataType: 'json',
+            type: 'GET',
+            data: { solutionID: id },
+                success: function (data) {
+                    $("#solutionTestResults").html(data.Html);
+                    $("#dialog").dialog('open');
+                },
+                cache: false
+        });
+    }
+
+    $(function () {
+
+        $("#dialog").dialog({
+            dialogClass: "no-close",
+            autoOpen: false,
+            draggable: false,
+            modal: true,
+            maxHeight: 600,
+            width: 500,
+            resizable: false,
+            open: function () {
+                jQuery('.ui-widget-overlay').bind('click', function () {
+                    jQuery('#dialog').dialog('close');
+                })
+            },
+            buttons: [
+                {
+                    text: "OK",
+                    click: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            ]
+        });
+
+        /**************************************************
+            * Begin PageIndex functions
+            *
+            * This handles the page index selected change functions.
+            **************************************************/
+
+        $("#pageIndex").change(function () {
+            var pageIndexVal = '?page=' + $("option:selected", this).val();
+            var pageSizeVal = '&pageSize=' + $("#pageSize option:selected").val();
+            location.href = '@Url.Action("Solutions", "Tester", new { Area = "TestersManagement" })' + pageIndexVal + pageSizeVal;
+        });
+
+        /**************************************************
+        * End PageIndex functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin PageSize functions
+        *
+        * This handles the page size selected change functions.
+        **************************************************/
+
+        $("#pageSize").change(function () {
+            var pageSizeVal = '?pageSize=' + $("option:selected", this).val();
+            location.href = '@Url.Action("Solutions", "Tester", new { Area = "TestersManagement" })' + pageSizeVal;
+        });
+
+        /**************************************************
+        * End PageSize functions
+        **************************************************/
+
+
+    });
+</script>
+
+<div id="dialog" title="Результат тестирования">
+    <div id="solutionTestResults"></div>
+</div>
+    
+<div id="section_inner">
+    <div class="table_minimal">
+        <table style="width: 100%">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Участник</th>
+                    <th style="width: 40px;">Задача</th>
+                    <th style="width: 100px;">Дата отправки</th>
+                    <th>Язык</th>
+                    <th>Результат</th>
+                    <th style="width: 40px;">Баллы</th>
+                    <th style="width: 40px;">Решение</th>
+                </tr>
+            </thead>
+            <tbody id="solutionsData">
+            </tbody>
+        </table>
+        <!--[if !IE]>start pagination<![endif]-->
+	    <div class="pagination">
+                    
+		    <span class="page_no" id="pageNo">Страница @Model.PageIndex из @Model.TotalPages</span>
+				
+		    <ul class="pag_list">
+                <li>
+                @if (Model.HasPreviousPage)
+                {
+                    @Html.ActionLink("Первая", "Solutions", "Tester",
+                    routeValues: new
+                    {
+                        area = "TestersManagement",
+                        page = 1,
+                        pageSize = Model.PageSize
+                    },
+                    htmlAttributes: null);
+                }
+                else
+                {
+                    <text>Первая</text>
+                }
+                </li>
+			    <li>
+                @if (Model.HasPreviousPage)
+                {
+                    @Html.ActionLink("Предыдущая", "Solutions", "Tester",
+                    routeValues: new
+                    {
+                        area = "TestersManagement",
+                        page = Model.PageIndex - 1,
+                        pageSize = Model.PageSize
+                    },
+                    htmlAttributes: null);
+                }
+                else
+                {
+                    <text>Предыдущая</text>
+                }
+                </li>
+
+
+                <li>
+                    <select id="pageIndex" name="pageIndex">
+                    @for (int i = 0; i < Model.TotalPages; i++)
+                    {
+                        <option value="@((i + 1).ToString())" 
+                            @if (Model.PageIndex == i + 1)
+                            {<text>selected="selected"</text>}>@((i + 1).ToString())</option>
+                    }
+                    </select>
+                </li>
+
+			    <li>
+                @if (Model.HasNextPage)
+                {
+                    @Html.ActionLink("Следующая", "Solutions", "Tester",
+                    routeValues: new
+                    {
+                        area = "TestersManagement",
+                        page = Model.PageIndex + 1,
+                        pageSize = Model.PageSize
+                    },
+                    htmlAttributes: null);
+                }
+                else
+                {
+                    <text>Следующая</text>
+                }
+                </li>
+                <li>
+                @if (Model.HasNextPage)
+                {
+                    @Html.ActionLink("Последняя", "Solutions", "Tester",
+                    routeValues: new
+                    {
+                        area = "TestersManagement",
+                        page = Model.TotalPages,
+                        pageSize = Model.PageSize
+                    },
+                    htmlAttributes: null);
+                }
+                else
+                {
+                    <text>Последняя</text>
+                }
+                </li>
+		    </ul>
+                
+            <div id="page-size">
+            Записей на странице: <select id="pageSize" name="pageSize">
+            <option value="25" @if (Model.PageSize == 25)
+                                {<text>selected="selected"</text>}>25</option>
+            <option value="50" @if (Model.PageSize == 50)
+                                {<text>selected="selected"</text>}>50</option>
+            <option value="100" @if (Model.PageSize == 100)
+                                {<text>selected="selected"</text>}>100</option>
+            </select>
+            </div>
+                
+	    </div>
+	    <!--[if !IE]>end pagination<![endif]--> 
+    </div>
+</div>

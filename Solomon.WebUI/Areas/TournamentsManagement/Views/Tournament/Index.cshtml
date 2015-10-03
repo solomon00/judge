@@ -1,0 +1,261 @@
+﻿@model Solomon.WebUI.Areas.TournamentsManagement.ViewModels.ManageTournamentsViewModel
+@{
+    ViewBag.Title = "Турниры";
+    Layout = "~/Areas/TournamentsManagement/Views/Shared/_Layout.cshtml";
+}
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "TournamentsManagement" }) > Турниры
+</div>
+
+<h2>
+    Турниры
+</h2>
+
+<p>Нажмите на имя турнира для редактирования.</p>
+<div class="search_wrapper">
+@using (Html.BeginForm())
+{
+    <text>Поиск:&nbsp;</text>
+    <select id="filterBy" name="filterBy">
+        <option value="all" @if (Model.FilterBy == "all")
+                            { <text>selected="selected"</text>}>Все</option>
+        <option value="name" @if (Model.FilterBy == "name")
+                             { <text>selected="selected"</text>}>Имя</option>
+    </select>
+    @Html.TextBox("searchTerm", Model.SearchTerm) 
+
+    <input class="button" type="submit" id="filter-button" value="Найти" />
+}
+</div>
+<br />
+
+@if (Model.PaginatedTournamentList != null)
+{
+    if (Model.PaginatedTournamentList.Count == 0)
+    {
+    <p>
+        Турниры не найдены.
+    </p>
+    }
+    else
+    {
+    <text>Всего турниров: @Model.PaginatedTournamentList.TotalCount.ToString()</text>
+    <div class="section_inner">
+        <div class="table_wrapper">
+            <div class="table_wrapper_inner">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tbody>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Тип</th>
+                            <th>Формат</th>
+                            <th>Дата начала</th>
+                            <th>Дата конца</th>
+                        </tr>
+                        @foreach (Solomon.Domain.Entities.Tournament item in Model.PaginatedTournamentList)
+                        {
+                            <tr>
+                                <td>@item.TournamentID</td>
+                                <td>@Html.ActionLink(item.Name, "Update", "Tournament", new { TournamentID = item.TournamentID }, null)</td>
+                                <td>@item.Type</td>
+                                <td>@item.Format</td>
+                                <td>@item.StartDate</td>
+                                <td>@item.EndDate</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+	<!--[if !IE]>start pagination<![endif]-->
+	<div class="pagination">
+                    
+		<span class="page_no">Страница @Model.PaginatedTournamentList.PageIndex из @Model.PaginatedTournamentList.TotalPages</span>
+						
+		<ul class="pag_list">
+            <li>
+            @if (Model.PaginatedTournamentList.HasPreviousPage)
+            {
+                @Html.ActionLink("Первая", "Index", "Tournament",
+                routeValues: new
+                {
+                    page = 1,
+                    pageSize = Model.PaginatedTournamentList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Первая</text>
+            }
+            </li>
+			<li>
+            @if (Model.PaginatedTournamentList.HasPreviousPage)
+            {
+                @Html.ActionLink("Предыдущая", "Index", "Tournament",
+                routeValues: new
+                {
+                    page = Model.PaginatedTournamentList.PageIndex - 1,
+                    pageSize = Model.PaginatedTournamentList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Предыдущая</text>
+            }
+            </li>
+
+
+            <li>
+                <select id="pageIndex" name="pageIndex">
+                @for (int i = 0; i < Model.PaginatedTournamentList.TotalPages; i++)
+                {
+                    <option value="@((i + 1).ToString())" 
+                        @if (Model.PaginatedTournamentList.PageIndex == i + 1)
+                        {<text>selected="selected"</text>}>@((i + 1).ToString())</option>
+                }
+                </select>
+            </li>
+
+			<li>
+            @if (Model.PaginatedTournamentList.HasNextPage)
+            {
+                @Html.ActionLink("Следующая", "Index", "Tournament",
+                routeValues: new
+                {
+                    page = Model.PaginatedTournamentList.PageIndex + 1,
+                    pageSize = Model.PaginatedTournamentList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Следующая</text>
+            }
+            </li>
+            <li>
+            @if (Model.PaginatedTournamentList.HasNextPage)
+            {
+                @Html.ActionLink("Последняя", "Index", "Tournament",
+                routeValues: new
+                {
+                    page = Model.PaginatedTournamentList.TotalPages,
+                    pageSize = Model.PaginatedTournamentList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Последняя</text>
+            }
+            </li>
+		</ul>
+
+        <div id="page-size">
+        Записей на странице: <select id="pageSize" name="pageSize">
+        <option value="25" @if (Model.PageSize == 25)
+                           {<text>selected="selected"</text>}>25</option>
+        <option value="50" @if (Model.PageSize == 50)
+                           {<text>selected="selected"</text>}>50</option>
+        <option value="100" @if (Model.PageSize == 100)
+                            {<text>selected="selected"</text>}>100</option>
+        </select>
+        </div>
+
+	</div>
+	<!--[if !IE]>end pagination<![endif]-->       
+    }
+}
+<script type="text/javascript">
+
+    $(function () {
+
+        /**************************************************
+        * Begin filterBy functions
+        *
+        * This will enable or disable the search field
+        * if the "ViewAll" selection is chosen.
+        **************************************************/
+
+        $(document).on('change', '#filterBy', function () {
+            var optionValue = $("option:selected", this).val();
+            if (optionValue == "all") {
+                // Clear the search field
+                $("#searchTerm").val("");
+
+                // Disable the search term field
+                $("#searchTerm").attr("disabled", "disabled");
+            } else {
+                $("#searchTerm").removeAttr("disabled");
+            }
+        });
+
+
+        function InitSearchField() {
+            var filterByVal = $("#filterBy option:selected").val();
+            if (filterByVal == "all") {
+                $("#searchTerm").attr("disabled", "disabled");
+            }
+        }
+
+        InitSearchField();
+
+        /**************************************************
+        * End filterBy functions
+        **************************************************/
+
+
+        /**************************************************
+        * Begin PageIndex functions
+        *
+        * This handles the page index selected change functions.
+        **************************************************/
+
+        $("#pageIndex").change(function () {
+            var pageIndexVal = '?page=' + $("option:selected", this).val();
+            var pageSizeVal = '&pageSize=' + $("#pageSize option:selected").val();
+            var filterByVal = '&filterBy=' + $("#filterBy option:selected").val();
+            var searchTerm = '&searchTerm=' + '@Model.SearchTerm';
+            location.href = '/TournamentsManagement/Tournament/Index' + pageIndexVal + pageSizeVal + filterByVal + searchTerm;
+        });
+
+        /**************************************************
+        * End PageIndex functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin PageSize functions
+        *
+        * This handles the page size selected change functions.
+        **************************************************/
+
+        $("#pageSize").change(function () {
+            var filterByVal = '&filterBy=' + $("#filterBy option:selected").val();
+            var searchTermVal = $("#searchTerm").val();
+            if (searchTermVal != '') searchTermVal = '&searchTerm=' + searchTermVal;
+            var pageSizeVal = '?pageSize=' + $("option:selected", this).val();
+            location.href = '/TournamentsManagement/Tournament/Index' + pageSizeVal + searchTermVal + filterByVal;
+        });
+
+        /**************************************************
+        * End PageSize functions
+        **************************************************/
+
+
+    });
+
+</script>

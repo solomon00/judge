@@ -1,0 +1,92 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.NewTeamViewModel
+@{
+    ViewBag.Title = "Создать команду";
+    if (Model.CanChangePassword)
+    {
+        Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Areas/User/Views/Shared/_LayoutWithoutPassword.cshtml";
+    }
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+}
+
+<script type="text/javascript">
+    $(function () {
+        var username_msg = $("#name-message");
+
+        $("#@Html.IdFor(model => model.Name)").focus();
+
+        $("#@Html.IdFor(model => model.Name)").blur(function () {
+
+            var name = $(this).val();
+
+            if (name == "") return;
+
+            $.ajax({
+                url: '@Url.Action("CheckForUniqueTeam", "Database", new { Area = "" })',
+                dataType: 'json',
+                type: 'GET',
+                data: { name: name },
+                success: OnCheckForUniqueTeamSuccess,
+                error: OnCheckForUniqueTeamError
+            });
+        });
+
+        function OnCheckForUniqueTeamSuccess(data) {
+            if (data.Exists) {
+                username_msg.text("Команда с таким именем уже существует. Пожалуйста, введите другое имя.");
+                username_msg.attr("class", "field-validation-error");
+                $("#ChangeNameBt").attr("disabled", "disabled");
+            } else {
+                username_msg.text("");
+                username_msg.attr("class", "field-validation-valid");
+                $("#ChangeNameBt").removeAttr("disabled");
+            }
+        }
+
+        function OnCheckForUniqueTeamError(xhr, status, error) {
+            username_msg.text("Произошла ошибка при проверке уникальности имени.");
+            username_msg.attr("class", "field-validation-error");
+        }
+
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+
+<h2>@ViewBag.Title</h2>
+
+<section>
+    
+    <fieldset>
+        <legend>Введите информацию о команде</legend>
+        @using (Html.BeginForm("Create", "Team", FormMethod.Post, new { Area = "User", UserName = WebSecurity.CurrentUserName, enctype = "multipart/form-data" }))
+        {
+            <div class="row">
+                @Html.LabelFor(model => model.Name)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.Name, new { @class = "text" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.Name, null, new { id = "name-message" })</span>
+                </div>
+            </div>
+            <p>
+                <input class="button" type="submit" value="Создать" style="width:150px;"/>
+            </p>
+        }
+    </fieldset>
+
+</section>

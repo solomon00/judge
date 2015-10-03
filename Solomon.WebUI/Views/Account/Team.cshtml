@@ -1,0 +1,178 @@
+﻿@model Solomon.WebUI.Models.TeamViewModel
+@{
+    ViewBag.Title = "Мои команды";
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+}
+
+<hgroup class="title">
+    <h1>@ViewBag.Title</h1>
+</hgroup>
+
+<p class="message-success">@ViewBag.StatusMessage</p>
+
+<section>
+    @if (Model.Invites.Count() > 0)
+    {
+        <fieldset style="margin-top:0px; margin-bottom: 15px;">
+            <legend>Приглашения</legend>
+            <p><h4>Следующие команды хотят, чтобы Вы стали их участником</h4></p>
+            @foreach (var team in Model.Invites)
+            {
+                using (Html.BeginForm("InviteResponse", "Account", new { TeamID = team.TeamID }, FormMethod.Post, new { Area = "", enctype = "multipart/form-data" }))
+                {
+                    <fieldset style="margin-top:0px; margin-bottom: 15px;">
+                        <legend>@Html.ActionLink(team.Name, "ManageTeam", "Account", new { ID = team.TeamID, Area = "" }, null)</legend>
+                        <p style="text-align: center;">
+                            <input class="button" type="submit" value="Принять" name="Accept" />
+                            <input class="button" type="submit" value="Отклонить" name="Reject" />
+                        </p>
+                        <table class="without_border" style="width: 100%">
+                            <thead>
+                                <tr>
+                                    <td style="width: 20px;"><h4 style="margin: 0">#</h4></td>
+                                    <td style="width: 35%;"><h4 style="margin: 0">Пользователь</h4></td>
+                                    <td style="width: 35%;"><h4 style="margin: 0">Полное имя</h4></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{int i = 0;}
+                                @foreach (var member in team.Members)
+                                {
+                                    if (member.UserID != WebSecurity.GetUserId(User.Identity.Name))
+                                    {
+                                        string fullName = (member.User.SecondName + " " + member.User.FirstName + " " + member.User.ThirdName).Trim();
+                                        i++;
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@member.User.UserName</td>
+                                            <td>@{ if (fullName == null || fullName == "")
+                                                   {<text>Не определено</text>}
+                                                   else
+                                                   {@fullName;
+                                                   }
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </fieldset>
+                }
+            }
+        </fieldset>
+    }
+
+    <fieldset style="margin-top:0px; margin-bottom: 15px;">
+        <legend>Создать команду</legend>
+        @using (Html.BeginForm("CreateTeam", "Account", FormMethod.Post, new { Area = "", enctype = "multipart/form-data" }))
+        {
+            <div class="row">
+                @Html.Label("Название команды", new { @for = "TeamName", @style = "width: 200px;" })
+                <div class="inputs" style="width: 920px;">
+                    <span class="input_wrapper" style="width: 700px;">
+                        @Html.TextBox("TeamName", null, new { @style = "width: 450px" })
+                        @Html.TextBox("CreateBt", "Создать", new { @class = "button", @type = "submit", @style = "margin-left: 10px; width: 210px;" })
+                    </span>
+                </div>
+            </div>
+        }
+    </fieldset>
+
+    <fieldset style="margin-top:0px;">
+        <legend>Мои команды</legend>
+        @if (Model.Teams.Count() == 0)
+        {
+            <p>Вы не состоите ни в одной команде</p>
+        }
+        else
+        {
+            foreach (var team in Model.Teams)
+            {
+                <fieldset style="margin-top:0px; margin-bottom: 15px;">
+                    <legend>@Html.ActionLink(team.Name, "ManageTeam", "Account", new { ID = team.TeamID, Area = "" }, null)</legend>
+                    <table class="without_border" style="width: 100%">
+                        <thead>
+                            <tr>
+                                <td style="width: 20px;"><h4 style="margin: 0">#</h4></td>
+                                <td style="width: 35%;"><h4 style="margin: 0">Пользователь</h4></td>
+                                <td style="width: 35%;"><h4 style="margin: 0">Полное имя</h4></td>
+                                <td><h4 style="margin: 0">Состояние</h4></td>
+                            </tr>
+                        </thead>
+                        <tbody id="membersTable@(team.TeamID)">
+                            @{int i = 0;}
+                            @foreach (var member in team.Members)
+                            {
+                                string fullName = (member.User.SecondName + " " + member.User.FirstName + " " + member.User.ThirdName).Trim();
+                                i++;
+                                <tr>
+                                    <td>@i</td>
+                                    <td>@member.User.UserName</td>
+                                    <td>@{ if (fullName == null || fullName == "")
+                                           {<text>Не определено</text>}
+                                           else
+                                           {@fullName;
+                                           }
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                           switch (member.Confirm)
+                                           {
+                                               case -1:
+                                                <text>Приглашение отклонено</text>
+                                                   break;
+                                               case 0:
+                                                <text>Приглашение отправлено</text>
+                                                   break;
+                                               case 1:
+                                                <text>Активный</text>
+                                                   break;
+                                           }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </fieldset>
+            }
+        }
+    </fieldset>
+</section>
+
+<script type="text/javascript">
+
+    $(function () {
+        var reloadMembersTable = function () {
+            @foreach (var team in Model.Teams)
+            {
+                <text>
+                $.ajax({
+                    url: '@Url.Action("GetMembersData", "Account")',
+                    dataType: 'json',
+                    type: 'GET',
+                    data: { teamID: '@team.TeamID' },
+                    success: function (data) {
+                        if (data.Success == false) {
+                            alert('error');
+                        }
+                        $("#membersTable@(team.TeamID)").html(data.HtmlTable);
+                    },
+                    cache: false
+                });
+                </text>
+            }
+        }
+        //reloadMembersTable();
+    });
+</script>

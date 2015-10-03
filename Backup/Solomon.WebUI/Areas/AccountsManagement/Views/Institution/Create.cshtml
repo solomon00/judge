@@ -1,0 +1,179 @@
+﻿@model Solomon.WebUI.Areas.AccountsManagement.ViewModels.CreateInstitutionViewModel
+
+@{
+    ViewBag.Title = "Создать образовательное учреждение";
+    Layout = "~/Areas/AccountsManagement/Views/Shared/_Layout.cshtml";
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+}
+
+<script type="text/javascript">
+    $(function () {
+        // ********************************************************************
+        // Country, city, institution fields
+        // 
+        var countryID = $("#@Html.IdFor(model => model.CountryID)").val();
+        var country = $("#@Html.IdFor(model => model.Country)").val();
+        var cityID = $("#@Html.IdFor(model => model.CityID)").val();
+        var city = $("#@Html.IdFor(model => model.City)").val();
+        var institutionID = $("#@Html.IdFor(model => model.InstitutionID)").val();
+        var institution = $("#@Html.IdFor(model => model.Institution)").val();
+
+        $("#@Html.IdFor(model => model.Country)").autocomplete({
+            source: '@Url.Action("Country", "Database", new { Area = "", limit = 10 })',
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.Country)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                country = ui.item.label;
+                $("#@Html.IdFor(model => model.Country)").val(country);
+
+                $("#@Html.IdFor(model => model.CountryID)").val(ui.item.value);
+
+                if (countryID != ui.item.value) {
+                    countryID = ui.item.value;
+
+                    $("#@Html.IdFor(model => model.City)").autocomplete("option", "source", '@Url.Action("City", "Database", new { Area = "", limit = 20 })&CountryID=' + countryID);
+                    $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.Country)").val() != "") {
+                        $("#@Html.IdFor(model => model.Country)").val(country);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.City)").autocomplete("option", "source", "@Url.Action("City", "Database", new { Area = "", limit = 20 })&CountryID=" + countryID);
+                        $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        });
+        $("#@Html.IdFor(model => model.City)").autocomplete({
+            source: '@Url.Action("City", "Database", new { Area = "", limit = 20 })&CountryID=' + countryID,
+            focus: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.City)").val(city);
+                return false;
+            },
+            select: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.City)").val(city);
+
+                $("#@Html.IdFor(model => model.CityID)").val(ui.item.value);
+
+                if (cityID != ui.item.value) {
+                    cityID = ui.item.value;
+
+                    $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.City)").val() != "") {
+                        $("#@Html.IdFor(model => model.City)").val(city);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .append("<a style=\"padding: 0 .4em;\">" + item.label + "</a>")
+                .appendTo(ul);
+        };
+        $("#@Html.IdFor(model => model.Institution)").autocomplete({
+            source: '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID,
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.Institution)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                institution = ui.item.label;
+                $("#@Html.IdFor(model => model.Institution)").val(institution);
+
+                $("#@Html.IdFor(model => model.InstitutionID)").val(ui.item.value);
+
+                return false;
+            }
+        });
+        //
+        // End country, city, institution fields
+        // ********************************************************************
+        
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+
+        $("#@Html.IdFor(model => model.Country)").focus();
+    });
+</script>
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "AccountsManagement" }, null) > 
+    @Html.ActionLink("Образовательные учреждения", "Index", "Membership", new { Area = "AccountsManagement" }, null) > 
+    Создать новое
+</div>
+
+<h2>Добавление нового образовательного учреждения (организации)</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+        <legend>Введите информацию об образовательном учреждении (организации)</legend>
+        
+        <div class="row">
+            @Html.LabelFor(model => model.Country)
+            @Html.HiddenFor(model => model.CountryID)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Country, new { @class = "text", tabindex = "1" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Country)</span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.City)
+            @Html.HiddenFor(model => model.CityID)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.City, new { @class = "text", tabindex = "2" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.City)</span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.Institution)
+            @Html.HiddenFor(model => model.InstitutionID)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Institution, new { @class = "text", tabindex = "3" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Institution)</span>
+            </div>
+        </div>
+
+        <p>
+            <input class="button" type="submit" value="Создать" />
+        </p>
+    </fieldset>
+}

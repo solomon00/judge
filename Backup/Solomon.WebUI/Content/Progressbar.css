@@ -1,0 +1,17 @@
+
+div#timeProgressbar {
+    position: relative;
+    margin-left:auto; 
+    margin-right:0px;
+    margin-bottom: -20px;
+    top: -20px;
+    height: 20px;
+}
+.progress-label {
+    position: absolute;
+    right: 10px;
+    top: 0px;
+    font-weight: 600;
+    text-align: center;
+    /*text-shadow: 1px 1px 0 #fff;*/
+}

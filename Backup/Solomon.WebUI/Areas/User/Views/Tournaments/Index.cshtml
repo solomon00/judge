@@ -1,0 +1,110 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.TournamentListViewModel
+
+@{
+    ViewBag.Title = "Турниры";
+    if (Model.CanChangePassword)
+    {
+        Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Areas/User/Views/Shared/_LayoutWithoutPassword.cshtml";
+    }
+}
+<h2>Вы зарегистрированы на следующие турниры:</h2>
+
+<section>
+<fieldset style="padding: 0.7em 1em 0.7em 1em;">
+    <legend>Текущие турниры</legend>
+    @if (Model.ActiveTournaments.Count() > 0)
+    {
+        <table class="without_border" style="width: 100%">
+            <thead>
+                <tr>
+                    <td style="width: 10px"><strong>#</strong></td>
+                    <td><strong>Название</strong></td>
+                    <td style="width: 120px"><strong>Дата завершения</strong></td>
+                    <td style="width: 90px; padding-right: 0"><strong>Результаты</strong></td>
+                </tr>
+            </thead>
+        @{int i = 0;}
+        @foreach (var t in Model.ActiveTournaments)
+        {
+            i++;
+            <tr class="highlight">
+                <td>@i</td>
+                <td>@Html.ActionLink(t.Name, "Problem", "Problem", new { tournamentID = t.TournamentID, area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+                <td>@t.EndDate.ToString("dd.MM.yyyy") в @t.EndDate.ToString("HH:mm")</td>
+                <td style="padding-right: 0">@Html.ActionLink("Просмотреть", "Results", "Tournament", new { TournamentID = t.TournamentID, Area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+            </tr>
+        }
+        </table>
+    }
+    else
+    {
+        <p>Вы не зарегистрированы на текущие турниры</p>
+    }
+</fieldset>
+<fieldset style="padding: 0.7em 1em 0.7em 1em;">
+    <legend>Будущие турниры</legend>
+    @if (Model.NotBegunTournaments.Count() > 0)
+    {
+        <table class="without_border" style="width: 100%">
+            <thead>
+                <tr>
+                    <td style="width: 10px"><strong>#</strong></td>
+                    <td><strong>Название</strong></td>
+                    <td style="width: 120px"><strong>Дата начала</strong></td>
+                    <td style="width: 90px; padding-right: 0"><strong>Результаты</strong></td>
+                </tr>
+            </thead>
+        @{int i = 0;}
+        @foreach (var t in Model.NotBegunTournaments)
+        {
+            i++;
+            <tr class="highlight">
+                <td>@i</td>
+                <td>@Html.ActionLink(t.Name, "Problem", "Problem", new { tournamentID = t.TournamentID, area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+                <td>@t.StartDate.ToString("dd.MM.yyyy") в @t.StartDate.ToString("HH:mm")</td>
+                <td style="padding-right: 0">@Html.ActionLink("Просмотреть", "Results", "Tournament", new { TournamentID = t.TournamentID, Area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+            </tr>
+        }
+        </table>
+    }
+    else
+    {
+        <p>Вы не зарегистрированы на будущие турниры</p>
+    }
+</fieldset>
+<fieldset style="padding: 0.7em 1em 0.7em 1em;">
+    <legend>Завершенные турниры</legend>
+    @if (Model.FinishTournaments.Count() > 0)
+    {
+        <table class="without_border" style="width: 100%">
+            <thead>
+                <tr>
+                    <td style="width: 10px"><strong>#</strong></td>
+                    <td><strong>Название</strong></td>
+                    <td style="width: 120px;"><strong>Дата завершения</strong></td>
+                    <td style="width: 90px; padding-right: 0"><strong>Результаты</strong></td>
+                </tr>
+            </thead>
+        @{int i = 0;}
+        @foreach (var t in Model.FinishTournaments)
+        {
+            i++;
+            <tr class="highlight">
+                <td>@i</td>
+                <td>@Html.ActionLink(t.Name, "Problem", "Problem", new { tournamentID = t.TournamentID, area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+                <td>@t.EndDate.ToString("dd.MM.yyyy") в @t.EndDate.ToString("HH:mm")</td>
+                <td style="padding-right: 0">@Html.ActionLink("Просмотреть", "Results", "Tournament", new { TournamentID = t.TournamentID, Area = "" }, new { @class = "no-background", @style = "text-decoration: underline;" })</td>
+            </tr>
+        }
+        </table>
+    }
+    else
+    {
+        <p>Вы не зарегистрированы на завершенные турниры</p>
+    }
+</fieldset>
+</section>

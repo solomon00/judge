@@ -1,0 +1,131 @@
+﻿@model Solomon.WebUI.Areas.ProblemsManagement.ViewModels.BindTournamentsToProblemViewModel
+@{
+    ViewBag.Title = "Привязать турниры к задаче";
+    Layout = "~/Areas/ProblemsManagement/Views/Shared/_Layout.cshtml";
+}
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "ProblemsManagement" }, null) > 
+    @Html.ActionLink("Задачи", "Index", "Problem", new { page = 1, pageSize = 25, searchTerm = "", filterBy = "all", area = "ProblemsManagement" }, null) > 
+    Привязать турниры к задаче
+</div>
+
+<h2>Привязать турниры к задаче</h2>
+
+<p>Выберите турнир из списка доступных турниров и нажмите &quot;Добавить&quot; для добавления задачи к турниру.</p>
+<p>Выберите турнир из списка привязанных турниров и нажмите &quot;Удалить&quot; для удаления задачи из турнира.</p>
+<p>Привязка к турнирам задачи: <span id="problemname-to-bind-tournaments">@Model.ProblemName</span></p>
+
+<fieldset style="float: left; height: 300px;">
+    <div id="available">
+        <h3>Доступные турниры</h3>
+        @Html.DropDownListFor(model => model.AvailableTournaments, Model.AvailableTournaments, new { @size = "2" })
+    </div>
+    <div id="bind-controls">
+        <button class="button" id="bind-button">Добавить --&gt;</button><br />
+        <button class="button" id="unbind-button">&lt;-- Удалить</button>
+    </div>
+    <div id="bound">
+        <h3>Привязанные турниры</h3>
+        @Html.DropDownListFor(model => model.BoundTournaments, Model.BoundTournaments, new { @size = "2" })
+    </div>
+</fieldset>
+<div style="clear:both;"></div>
+
+<script type="text/javascript">
+    $(function () {
+        
+        /******************************************************
+        * Begin Bind/Unbind commands
+        ******************************************************/
+        var availableList = $("#AvailableTournaments");
+        var boundList = $("#BoundTournaments");
+
+        $("#bind-button").click(function () {
+            
+            // First check if any items in the available list
+            // are selected.
+            if (availableList.val() == null) {
+                toastr.info("Пожалуйста, выберите турнир для добавления.");
+                return;
+            }
+            var tournamentID = availableList.val().toString();
+
+            // Then move the selected list items to the 
+            // bound list.
+            move_list_items("AvailableTournaments", "BoundTournaments");
+
+            // Now execute the command using jQuery ajax.
+            $.ajax({
+                url: '@Url.Action("BindTournamentToProblem", "Problem")',
+                dataType: 'json',
+                type: 'POST',
+                data: { tournamentID: tournamentID, problemID: '@Model.ProblemID' },
+                success: OnBoundSuccess,
+                error: OnBoundError
+            });
+        });
+
+        function OnBoundSuccess(data) {
+            if (data.Success == true) {
+                toastr.success(data.Message);
+            }
+            else {
+                toastr.error(data.Message);
+            }
+        }
+
+        function OnBoundError(xhr, status, error) {
+            alert(error);
+        }
+
+
+
+        $("#unbind-button").click(function () {
+            // First make sure at least one tournament in the 
+            // bound list is selected to unbind.
+            if (boundList.val() == null) {
+                toastr.info("Пожалуйста, выберите турнир для удаления.");
+                return;
+            }
+            var tournamentID = boundList.val().toString();
+
+            // Now move the item back to the Available list.
+            move_list_items("BoundTournaments", "AvailableTournaments");
+
+            // Now execute the command using jQuery ajax.
+            $.ajax({
+                url: '@Url.Action("UnbindTournamentFromProblem", "Problem")',
+                dataType: 'json',
+                type: 'POST',
+                data: { tournamentID: tournamentID, problemID: '@Model.ProblemID' },
+                success: OnUnbindSuccess,
+                error: OnUnbindError
+            });
+        });
+
+        function OnUnbindSuccess(data) {
+            if (data.Success == true) {
+                toastr.success(data.Message);
+            }
+            else {
+                toastr.error(data.Message);
+            }
+        }
+
+        function OnUnbindError(xhr, status, error) {
+            alert(error);
+        }
+
+        // This function moves items from one list to the other.
+        function move_list_items(sourceid, destinationid) {
+            $("#" + sourceid + "  option:selected").appendTo("#" + destinationid);
+        }
+        /******************************************************
+        * End Bind/Unbind commands
+        ******************************************************/
+
+
+
+    });
+</script>

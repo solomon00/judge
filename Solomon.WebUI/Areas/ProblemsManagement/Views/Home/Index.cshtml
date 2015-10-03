@@ -1,0 +1,31 @@
+﻿@model Solomon.WebUI.Areas.ProblemsManagement.ViewModels.HomeViewModel
+@{
+    ViewBag.Title = "Управление задачами";
+    Layout = "~/Areas/ProblemsManagement/Views/Shared/_Layout.cshtml";
+}
+<h2>
+    Управление задачами
+</h2>
+<div class="fl w48pc mr20">
+    <fieldset>
+        <legend>Информация о задачах</legend>
+        <table>
+            <tr>
+                <td>Всего задач:</td>
+                <td>@Model.TotalProblemCount</td>
+            </tr>
+            <tr>
+                <td>Стандартных задач:</td>
+                <td>@Model.StandartProblemCount</td>
+            </tr>
+            <tr>
+                <td>Открытых задач:</td>
+                <td>@Model.OpenProblemCount</td>
+            </tr>
+            <tr>
+                <td>Интерактивных задач:</td>
+                <td>@Model.InteractiveProblemCount</td>
+            </tr>
+        </table>
+    </fieldset>
+</div>

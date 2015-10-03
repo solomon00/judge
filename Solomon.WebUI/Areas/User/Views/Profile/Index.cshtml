@@ -1,0 +1,354 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.ProfileViewModel
+@{
+    ViewBag.Title = "Профиль";
+    if (Model.CanChangePassword)
+    {
+        Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Areas/User/Views/Shared/_LayoutWithoutPassword.cshtml";
+    }
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/ui.datepicker-ru.js")"></script>
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>Вы вошли как <strong>@User.Identity.Name</strong>.</p>
+
+<style>
+    .ui-autocomplete {
+        max-height: 400px;
+        overflow-y: auto;
+        /* prevent horizontal scrollbar */
+        overflow-x: hidden;
+    }
+</style>
+<script>
+    $(function() {
+        
+        // ********************************************************************
+        // Country, city, institution fields
+        // 
+        if ($("#@Html.IdFor(model => model.Country)").val() == "")
+            $("#@Html.IdFor(model => model.City)").prop('disabled', true);
+        if ($("#@Html.IdFor(model => model.City)").val() == "")
+            $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+        var countryID = $("#@Html.IdFor(model => model.CountryID)").val();
+        var country = $("#@Html.IdFor(model => model.Country)").val();
+        var cityID = $("#@Html.IdFor(model => model.CityID)").val();
+        var city = $("#@Html.IdFor(model => model.City)").val();
+        var institutionID = $("#@Html.IdFor(model => model.InstitutionID)").val();
+        var institution = $("#@Html.IdFor(model => model.Institution)").val();
+
+        $("#@Html.IdFor(model => model.Country)").autocomplete({
+            source: '@Url.Action("Country", "Database", new { Area = "", limit = 10 })',
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.Country)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                country = ui.item.label;
+                $("#@Html.IdFor(model => model.Country)").val(country);
+                $("#@Html.IdFor(model => model.City)").prop('disabled', false);
+
+                $("#@Html.IdFor(model => model.CountryID)").val(ui.item.value);
+
+                if (countryID != ui.item.value) {
+                $("#@Html.IdFor(model => model.City)").val("");
+                    $("#@Html.IdFor(model => model.CityID)").val("");
+                    $("#@Html.IdFor(model => model.Institution)").val("");
+                    $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                    $("#@Html.IdFor(model => model.City)").prop('disabled', false);
+                    $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+                    countryID = ui.item.value;
+                    cityID          = null;
+                    city            = null;
+                    institutionID  = null;
+                    institution = null;
+
+                    $("#@Html.IdFor(model => model.City)").autocomplete("option", "source", '@Url.Action("City", "Database", new { Area = "", limit = 40 })&CountryID=' + countryID);
+                    $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.Country)").val() != "") {
+                        $("#@Html.IdFor(model => model.Country)").val(country);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.CountryID)").val("");
+                        $("#@Html.IdFor(model => model.City)").val("");
+                        $("#@Html.IdFor(model => model.CityID)").val("");
+                        $("#@Html.IdFor(model => model.Institution)").val("");
+                        $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                        $("#@Html.IdFor(model => model.City)").prop('disabled', true);
+                        $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+                        countryID = null;
+                        country = null;
+                        cityID = null;
+                        city = null;
+                        institutionID = null;
+                        institution = null;
+
+                        $("#@Html.IdFor(model => model.City)").autocomplete("option", "source", "@Url.Action("City", "Database", new { Area = "", limit = 40 })&CountryID=" + countryID);
+                        $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        });
+        $("#@Html.IdFor(model => model.City)").autocomplete({
+            source: '@Url.Action("City", "Database", new { Area = "", limit = 40 })&CountryID=' + countryID,
+            focus: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.City)").val(city);
+                return false;
+            },
+            select: function (event, ui) {
+                city = ui.item.label.substring(0, ui.item.label.indexOf("<br"));
+                if (city.indexOf("<b>") != -1)
+                    city = city.substring(city.indexOf("<b>") + 3, city.indexOf("</b>"));
+                $("#@Html.IdFor(model => model.City)").val(city);
+                $("#@Html.IdFor(model => model.Institution)").prop('disabled', false);
+
+                $("#@Html.IdFor(model => model.CityID)").val(ui.item.value);
+
+                if (cityID != ui.item.value) {
+                    $("#@Html.IdFor(model => model.Institution)").val("");
+                    $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                    $("#@Html.IdFor(model => model.Institution)").prop('disabled', false);
+
+                    cityID = ui.item.value;
+                    institutionID = null;
+                    institution = null;
+
+                    $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                }
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.City)").val() != "") {
+                        $("#@Html.IdFor(model => model.City)").val(city);
+                    }
+                    else {
+                        $("#@Html.IdFor(model => model.CityID)").val("");
+                        $("#@Html.IdFor(model => model.Institution)").val("");
+                        $("#@Html.IdFor(model => model.InstitutionID)").val("");
+
+                        $("#@Html.IdFor(model => model.Institution)").prop('disabled', true);
+
+                        cityID = null;
+                        city = null;
+                        institutionID = null;
+                        institution = null;
+
+                        $("#@Html.IdFor(model => model.Institution)").autocomplete("option", "source", '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID);
+                    }
+                }
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .append("<a style=\"padding: 0 .4em;\">" + item.label + "</a>")
+                .appendTo(ul);
+        };
+
+        $("#@Html.IdFor(model => model.Institution)").autocomplete({
+            source: '@Url.Action("Institution", "Database", new { Area = "", limit = 20 })&CityID=' + cityID,
+            focus: function (event, ui) {
+                $("#@Html.IdFor(model => model.Institution)").val(ui.item.label);
+                return false;
+            },
+            select: function (event, ui) {
+                institution = ui.item.label;
+                $("#@Html.IdFor(model => model.Institution)").val(institution);
+
+                $("#@Html.IdFor(model => model.InstitutionID)").val(ui.item.value);
+
+                return false;
+            },
+            change: function (event, ui) {
+                if (ui.item == null) {
+                    if ($("#@Html.IdFor(model => model.Institution)").val() != "") {
+                        $("#@Html.IdFor(model => model.Institution)").val(institution);
+                    }
+                    else {
+                        institutionID = null;
+                        institution = null;
+                    }
+                }
+                return false;
+            }
+        });
+        //
+        // End country, city, institution fields
+        // ********************************************************************
+
+        $("#@Html.IdFor(model => model.BirthDay)").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            showOtherMonths: true,
+            selectOtherMonths: true,
+            yearRange: '1950:2010',
+            defaultDate: '-18y'
+            //dateFormat: "dd.mm.yy"
+        });
+        $("#@Html.IdFor(model => model.BirthDay)").datepicker(
+            $.datepicker.regional["ru"]
+        );
+
+        $.validator.addMethod('date',
+            function (value, element, params) {
+                if (this.optional(element)) {
+                    return true;
+                }
+
+                var ok = true;
+                try {
+                    $.datepicker.parseDate('dd.mm.yy', value);
+                }
+                catch (err) {
+                    ok = false;
+                }
+                return ok;
+            });
+
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+<section>
+    @using (Html.BeginForm("Index", "Profile", FormMethod.Post, new { Area = "User", UserName = WebSecurity.CurrentUserName, enctype = "multipart/form-data" }))
+    {
+    <fieldset style="margin-top:0px;">
+        <legend>Расскажите о себе</legend>
+        
+        @*first row*@
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.SecondName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.SecondName, new { @class = "half-text", tabindex = "1" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.SecondName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.Country)
+                @Html.HiddenFor(model => model.CountryID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.Country, new { @class = "half-text", tabindex = "6" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.Country)</span>
+                </div>
+            </div>
+        </div>
+
+        @*second row*@
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.FirstName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.FirstName, new { @class = "half-text", tabindex = "2" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.FirstName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.City)
+                @Html.HiddenFor(model => model.CityID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.City, new { @class = "half-text", tabindex = "7" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.City)</span>
+                </div>
+            </div>
+        </div>
+
+        @*third row*@
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.ThirdName)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.ThirdName, new { @class = "half-text", tabindex = "3" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.ThirdName)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.Institution)
+                @Html.HiddenFor(model => model.InstitutionID)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.Institution, new { @class = "half-text", tabindex = "8" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.Institution)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.BirthDay)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.BirthDay, new { @Value = Model.BirthDay != null ? ((DateTime)Model.BirthDay).ToString("dd.MM.yyyy") : String.Empty, data_val_date = "Пожалуйста, введите дату в формате dd.mm.yyyy", @class = "half-text", tabindex = "4" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.BirthDay)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.CategoryList)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.DropDownListFor(model => model.CategoryListID, Model.CategoryList, new { @class = "half-text", tabindex = "9" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.CategoryList)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div style="width: 50%; float: left;">
+                @Html.LabelFor(model => model.PhoneNumber)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.PhoneNumber, new { @class = "half-text", tabindex = "5" })</span>
+                    <span class="system negative">@Html.ValidationMessageFor(model => model.PhoneNumber)</span>
+                </div>
+            </div>
+            <div style="width: 50%; margin-left: 52%;">
+                @Html.LabelFor(model => model.GradeLevel)
+                <div class="inputs">
+                    <span class="input_wrapper">@Html.TextBoxFor(model => model.GradeLevel, new { @class = "half-text", tabindex = "10" })</span>
+                </div>
+            </div>
+        </div>
+        
+        <p>
+            <input class="button" type="submit" value="Сохранить" />
+        </p>
+
+        <p>
+            <i>* Если вашего города или образовательного учреждения нет в базе, пожалуйста, напишите нам по адресу <a href="mailto:solomon.mesi.ru@gmail.com" >solomon.mesi.ru@gmail.com</a>.<br />
+            В теме письма укажите "Добавление города/ОУ в базу", в теле письма укажите полное наименование города, который нужно добавить, 
+            или образовательного учреждения, не забудьте указать название города, в котором находится образовательное учреждение.</i>
+        </p>
+    </fieldset>
+    }
+</section>
+

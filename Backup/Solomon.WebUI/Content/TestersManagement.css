@@ -1,0 +1,32 @@
+
+.compilers .row
+{
+    width: 100%;
+    overflow: hidden;
+    padding: 5px 0 10px 0;
+}
+.compilers .row label, .compilers .row_error_top label
+{
+    display: inline;
+    float: left;
+    width: auto;
+    font-weight: bold;
+    padding-top: 0px;
+}
+.compilers .row input[type="text"]
+{
+    width: 170px;
+    vertical-align: top;
+}
+.compilers .row input[type="checkbox"]
+{
+    margin-top: 10px;
+}
+
+.compilers .row td {
+    padding: 0em 0.5em 0.2em 0em;
+}
+
+.compilers .row_error_top td {
+    padding: 0.5em 0.5em 0em 0em;
+}

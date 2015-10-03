@@ -1,0 +1,117 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.TeamViewModel
+@{
+    ViewBag.Title = "Команды";
+    if (Model.CanChangePassword)
+    {
+        Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Areas/User/Views/Shared/_LayoutWithoutPassword.cshtml";
+    }
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+}
+
+<script type="text/javascript">
+    $(function () {
+        var reloadMembersTable = function () {
+            @foreach (var team in Model.Teams)
+            {
+                <text>
+                $.ajax({
+                    url: '@Url.Action("GetMembersData", "Account")',
+                        dataType: 'json',
+                        type: 'GET',
+                        data: { teamID: '@team.TeamID' },
+                        success: function (data) {
+                            if (data.Success == false) {
+                                alert('error');
+                            }
+                            $("#membersTable@(team.TeamID)").html(data.HtmlTable);
+                        },
+                        cache: false
+                    });
+                </text>
+            }
+        }
+
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+
+<h2>@ViewBag.Title</h2>
+
+<section>
+    @if (Model.Teams.Count() == 0)
+    {
+        <p>Вы не состоите ни в одной команде</p>
+    }
+    else
+    {
+        <h4 style="margin: 1em 0 1em 0;"><b>Вы входите в состав следующих команд:</b></h4>
+        foreach (var team in Model.Teams)
+        {
+            <fieldset>
+                <legend>@Html.ActionLink(team.Name, "Manage", "Team", new { TeamID = team.TeamID, Area = "User", UserName = WebSecurity.CurrentUserName }, null)</legend>
+                <table class="without_border" style="width: 100%">
+                    <thead>
+                        <tr>
+                            <td style="width: 20px;"><h4 style="margin: 0;">#</h4></td>
+                            <td style="width: 170px;"><h4 style="margin: 0;">Пользователь</h4></td>
+                            <td style="width: 300px;"><h4 style="margin: 0;">Полное имя</h4></td>
+                            <td style="width: 130px;"><h4 style="margin: 0;">Состояние</h4></td>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTable@(team.TeamID)">
+                        @{int i = 0;}
+                        @foreach (var member in team.Members)
+                        {
+                            string fullName = (member.User.SecondName + " " + member.User.FirstName + " " + member.User.ThirdName).Trim();
+                            i++;
+                            <tr>
+                                <td>@i</td>
+                                <td>@member.User.UserName</td>
+                                <td>@{ if (fullName == null || fullName == "")
+                                       {<text>Не определено</text>}
+                                       else
+                                       {@fullName;
+                                       }
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                       switch (member.Confirm)
+                                       {
+                                           case -1:
+                                            <text>Приглашение отклонено</text>
+                                               break;
+                                           case 0:
+                                            <text>Приглашение отправлено</text>
+                                               break;
+                                           case 1:
+                                            <text>Активный</text>
+                                               break;
+                                       }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </fieldset>
+        }
+    }
+</section>

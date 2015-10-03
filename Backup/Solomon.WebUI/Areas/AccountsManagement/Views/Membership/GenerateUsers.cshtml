@@ -1,0 +1,42 @@
+﻿@model Solomon.WebUI.Areas.AccountsManagement.ViewModels.GenerateUsersViewModel
+
+@{
+    ViewBag.Title = "Сгенерировать аккаунты";
+    Layout = "~/Areas/AccountsManagement/Views/Shared/_Layout.cshtml";
+}
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "AccountsManagement" }, null) > 
+    @Html.ActionLink("Пользователи", "Index", "Membership", new { Area = "AccountsManagement" }, null) > 
+    Сгенерировать аккаунты
+</div>
+
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+
+<h2>Генерация аккаунтов</h2>
+@using (Html.BeginForm("GenerateUsers", "Membership", FormMethod.Post, new { Area = "AccountsManagement", enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary(true)
+    <fieldset>
+        <legend>Введите информацию о пользователях</legend>
+        
+        <div class="row">
+            @Html.LabelFor(model => model.UserNameTemplate)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.UserNameTemplate, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.UserNameTemplate)</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            @Html.LabelFor(model => model.Titles)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Titles, new { type = "file" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Titles)</span>
+            </div>
+        </div>
+
+        <p><input class="button" type="submit" value="Дальше" /></p>
+    </fieldset>
+}

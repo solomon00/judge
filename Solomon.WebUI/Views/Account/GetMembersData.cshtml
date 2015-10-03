@@ -1,0 +1,37 @@
+﻿@{
+    Layout = null;
+}
+
+@{int i = 0;}
+@foreach (var member in (System.Collections.Generic.List<Solomon.Domain.Entities.UserProfileTeam>)ViewData["Members"])
+{
+    string fullName = (member.User.SecondName + " " + member.User.FirstName + " " + member.User.ThirdName).Trim();
+    i++;
+    <tr>
+        <td>@i</td>
+        <td>@member.User.UserName</td>
+        <td>@{ if (fullName == null || fullName == "")
+               {<text>Не определено</text>}
+               else
+               {@fullName;
+               }
+            }
+        </td>
+        <td>
+            @{
+            switch (member.Confirm)
+            {
+                case -1:
+                    <text>Приглашение отклонено</text>
+                    break;
+                case 0:
+                    <text>Приглашение отправлено</text>
+                    break;
+                case 1:
+                    <text>Активный</text>
+                    break;
+            }
+            }
+        </td>
+    </tr>
+}

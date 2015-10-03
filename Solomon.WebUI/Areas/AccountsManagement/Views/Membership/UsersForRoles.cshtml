@@ -1,0 +1,298 @@
+﻿@model Solomon.WebUI.Areas.AccountsManagement.ViewModels.ManageUsersViewModel
+@{
+    ViewBag.Title = "Привязать роли";
+    Layout = "~/Areas/AccountsManagement/Views/Shared/_Layout.cshtml";
+}
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "AccountsManagement" }, null) > 
+    @Html.ActionLink("Пользователи", "Index", "Membership", new { Area = "AccountsManagement" }, null) >  
+    Привязать роли
+</div>
+
+<h2>
+    Привязать роли к пользователям
+</h2>
+
+<p>Нажмите на имя пользователя для доабвления ролей.</p>
+<div class="search_wrapper">
+@using (Html.BeginForm("GrantRolesToUsers", "Membership"))
+{
+    <text>Поиск:&nbsp;</text>
+    <select id="filterBy" name="filterBy">
+        <option value="all" @if (Model.FilterBy == "all")
+                            { <text>selected="selected"</text>}>Все</option>
+        <option value="username" @if (Model.FilterBy == "username")
+                                 { <text>selected="selected"</text>}>Имя</option>
+        <option value="email" @if (Model.FilterBy == "email")
+                              { <text>selected="selected"</text>}>Email</option>
+    </select>
+    @Html.TextBox("searchTerm", Model.SearchTerm) 
+
+    <input class="button" type="submit" id="filter-button" value="Найти" />
+}
+</div>
+<br />
+
+@if (Model.PaginatedUserList != null)
+{
+    if (Model.PaginatedUserList.Count == 0)
+    {
+    <p>
+        Ничего не найдено.
+    </p>
+    }
+    else
+    {
+    <text>Записей: @Model.PaginatedUserList.TotalCount.ToString()</text>
+    <div class="section_inner">
+        <div class="table_wrapper">
+            <div class="table_wrapper_inner">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tbody>
+                        <tr>
+                            <th>ID</th>
+                            <th>UserName</th>
+                            <th>FullName</th>
+                            <th>Email</th>
+                        </tr>
+                        @foreach (Solomon.Domain.Entities.UserProfile item in Model.PaginatedUserList)
+                        {
+                            string fullName = (item.SecondName + " " + item.FirstName + " " + item.ThirdName).Trim();
+                            <tr>
+                                <td>@item.UserId</td>
+                                <td>@Html.ActionLink(item.UserName, "GrantRolesToUsers", "Membership", new { UserID = item.UserId }, null)</td>
+                                <td>@fullName</td>
+                                <td>@item.Email</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+	<!--[if !IE]>start pagination<![endif]-->
+	<div class="pagination">
+                    
+		<span class="page_no">Страница @Model.PaginatedUserList.PageIndex из @Model.PaginatedUserList.TotalPages</span>
+						
+		<ul class="pag_list">
+            <li>
+            @if (Model.PaginatedUserList.HasPreviousPage)
+            {
+                @Html.ActionLink("Первая", "GrantRolesToUsers", "Membership",
+                routeValues: new
+                {
+                    page = 1,
+                    pageSize = Model.PaginatedUserList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Первая</text>
+            }
+            </li>
+			<li>
+            @if (Model.PaginatedUserList.HasPreviousPage)
+            {
+                @Html.ActionLink("Предыдущая", "GrantRolesToUsers", "Membership",
+                routeValues: new
+                {
+                    page = Model.PaginatedUserList.PageIndex - 1,
+                    pageSize = Model.PaginatedUserList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Предыдущая</text>
+            }
+            </li>
+
+
+            <li>
+                <select id="pageIndex" name="pageIndex">
+                @for (int i = 0; i < Model.PaginatedUserList.TotalPages; i++)
+                {
+                    <option value="@((i + 1).ToString())" 
+                        @if (Model.PaginatedUserList.PageIndex == i + 1)
+                        {<text>selected="selected"</text>}>@((i + 1).ToString())</option>
+                }
+                </select>
+            </li>
+
+			<li>
+            @if (Model.PaginatedUserList.HasNextPage)
+            {
+                @Html.ActionLink("Следующая", "GrantRolesToUsers", "Membership",
+                routeValues: new
+                {
+                    page = Model.PaginatedUserList.PageIndex + 1,
+                    pageSize = Model.PaginatedUserList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Следующая</text>
+            }
+            </li>
+            <li>
+            @if (Model.PaginatedUserList.HasNextPage)
+            {
+                @Html.ActionLink("Последняя", "GrantRolesToUsers", "Membership",
+                routeValues: new
+                {
+                    page = Model.PaginatedUserList.TotalPages,
+                    pageSize = Model.PaginatedUserList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Последняя</text>
+            }
+            </li>
+		</ul>
+
+        <div id="page-size">
+        Записей на странице: <select id="pageSize" name="pageSize">
+        <option value="25" @if (Model.PageSize == 25)
+                           {<text>selected="selected"</text>}>25</option>
+        <option value="50" @if (Model.PageSize == 50)
+                           {<text>selected="selected"</text>}>50</option>
+        <option value="100" @if (Model.PageSize == 100)
+                            {<text>selected="selected"</text>}>100</option>
+        </select>
+        </div>
+
+	</div>
+	<!--[if !IE]>end pagination<![endif]-->
+    }
+}
+<script type="text/javascript">
+
+    $(function () {
+
+        /**************************************************
+        * Begin Radio Button functions
+        *
+        * This captures radio button event clicks and 
+        * enables the "Grant Roles To User" link.
+        **************************************************/
+        var anchor = $("a#grant-roles-to-user");
+        //anchor.attr("disabled", "disabled");
+
+        $(".userRadio").click(function () {
+            // Get the value of the clicked radio button
+            // which is the username.
+            var userName = $(this).val();
+
+            // Get a reference to the "href" of the link.
+            //var href = anchor.attr("href");
+            var href = '@Url.Action("GrantRolesToUsers", "Membership")';
+
+            // Concatenate the existing href value with the username
+            var newHref = href + "/" + userName;
+
+            // Replace the existing href value with the new one
+            anchor.attr("href", newHref);
+
+            // Remove the disabled attribute on the 
+            // Grant Roles to User link
+            anchor.removeAttr("disabled");
+        });
+
+        /**************************************************
+        * End Radio Button functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin filterBy functions
+        *
+        * This will enable or disable the search field
+        * if the "ViewAll" selection is chosen.
+        **************************************************/
+
+        $(document).on('change', '#filterBy', function () {
+            var optionValue = $("option:selected", this).val();
+            if (optionValue == "all") {
+                // Clear the search field
+                $("#searchTerm").val("");
+
+                // Disable the search term field
+                $("#searchTerm").attr("disabled", "disabled");
+            } else {
+                $("#searchTerm").removeAttr("disabled");
+            }
+        });
+
+
+        function InitSearchField() {
+            var filterByVal = $("#filterBy option:selected").val();
+            if (filterByVal == "all") {
+                $("#searchTerm").attr("disabled", "disabled");
+            }
+        }
+
+        InitSearchField();
+
+        /**************************************************
+        * End filterBy functions
+        **************************************************/
+
+
+        /**************************************************
+        * Begin PageIndex functions
+        *
+        * This handles the page index selected change functions.
+        **************************************************/
+
+        $("#pageIndex").change(function () {
+            var pageIndexVal = '?page=' + $("option:selected", this).val();
+            var pageSizeVal = '&pageSize=' + $("#pageSize option:selected").val();
+            var filterByVal = '&filterBy=' + $("#filterBy option:selected").val();
+            var searchTerm = '&searchTerm=' + '@Model.SearchTerm';
+            location.href = '/AccountsManagement/Membership/GrantRolesToUsers' + pageIndexVal + pageSizeVal + filterByVal + searchTerm;
+        });
+
+        /**************************************************
+        * End PageIndex functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin PageSize functions
+        *
+        * This handles the page size selected change functions.
+        **************************************************/
+
+        $("#pageSize").change(function () {
+            var filterByVal = '&filterBy=' + $("#filterBy option:selected").val();
+            var searchTermVal = $("#searchTerm").val();
+            if (searchTermVal != '') searchTermVal = '&searchTerm=' + searchTermVal;
+            var pageSizeVal = '?pageSize=' + $("option:selected", this).val();
+            location.href = '/AccountsManagement/Membership/GrantRolesToUsers' + pageSizeVal + searchTermVal + filterByVal;
+        });
+
+        /**************************************************
+        * End PageSize functions
+        **************************************************/
+
+
+    });
+
+</script>

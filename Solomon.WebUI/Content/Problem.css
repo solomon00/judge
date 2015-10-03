@@ -1,0 +1,106 @@
+﻿body {
+}
+
+div#ProblemsList {
+    border-right: 2px solid gray;
+    float: left; width: 12em;
+}
+
+div#ProblemsList A {
+    font: bold-1.1em "Arial Narrow","Franklin Gothic Medium",Arial; 
+    display: block;
+    text-decoration:  none;  padding:  .6em;  color: Black; 
+    border-bottom:  1px solid silver;
+}
+
+div#ProblemsList A.selected { background-color:  #666;  color: White; } 
+div#ProblemsList A:hover { background-color:  #CCC; }
+div#ProblemsList A.selected:hover { background-color:  #666; }
+
+div#Content { 
+    border-left: 2px solid gray; 
+    margin-left: 12em; 
+    padding: 0em 1em 1em 1em; 
+    min-height: 20em;
+}
+
+div.addsolution_wrapper select {
+    border: 1px solid #ccc;
+    padding: 2px;
+    font-size: 1em;
+    color: #444;
+    width: 200px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+div.addsolution_wrapper input[type="file"] {
+    font-size: 1em;
+    width: auto;
+    padding: 1px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+div.addsolution_wrapper input[type="submit"] {
+    border: 1px solid #787878;
+    background: #d3dce0;
+    font-size: 1em;
+    padding: 3px;
+    vertical-align: middle;
+}
+
+
+div.addComment_wrapper textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+td {
+    padding: 0.25em 0.25em 0.25em 0.25em;
+    border: 1px solid;
+    vertical-align: top;
+}
+
+.without_border td {
+    padding: 0.1em 2em 0.1em 0em;
+}
+
+h2, h3 {
+    margin-top: 0;
+}
+
+h7 {
+    color: #ffa20f;
+}
+
+h8 {
+    color: #20c700;
+}
+
+h9 {
+    color: #d00;
+}
+
+/* Notification counter */
+.notification-container {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-counter {   
+    position: absolute;
+    top: -2px;
+    left: 80px;
+    
+    background-color: rgb(236, 63, 57);
+    color: #fff;
+    padding: 1px 3px;
+    font-weight:bold;
+    font-size:0.55em;
+    
+    border-radius:3px;
+    box-shadow:1px 1px 1px gray;
+
+    display: none;
+}

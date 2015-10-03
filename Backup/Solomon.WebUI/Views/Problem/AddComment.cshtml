@@ -1,0 +1,33 @@
+﻿@model Solomon.WebUI.ViewModels.AddCommentViewModel
+
+@{
+    Layout = null;
+}
+
+<script type="text/javascript">
+    
+</script>
+
+@if (HttpContext.Current.User.Identity.IsAuthenticated)
+{
+    using (Html.BeginForm("AddComment", "Problem",
+            new { problemID = Model.ProblemID, tournamentID = Model.TournamentID },
+            FormMethod.Post, new { id = "CommentForm", enctype = "multipart/form-data" }))
+    {
+        <div class="addComment_wrapper">
+            <h3>Добавить комментарий</h3>
+            @Html.TextAreaFor(model => model.Value)
+            @Html.HiddenFor(model => model.ParentCommentID)
+            <p>
+                <input class="button" type="submit" value="Отправить" />
+                <a onclick="cancelAnswer()" id="CancelAnswer" style="display: none;">Отменить</a>
+            </p>
+        </div>
+    }
+}
+else
+{
+    <h4 class="error">
+        Вы не можете участвовать в обсуждении. Пожалуйста, @Html.ActionLink("войдите", "Login", "Account", new { ReturnUrl = HttpContext.Current.Request.Url.AbsolutePath }, htmlAttributes: new { id = "loginLink" }) в систему.
+    </h4>
+}

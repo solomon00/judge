@@ -1,0 +1,173 @@
+﻿@model Solomon.WebUI.ViewModels.TournamentStatisticViewModel
+
+@{
+    ViewBag.Title = "Статистика турнира";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/TournamentResults.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/Progressbar.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/Highcharts-3.0.10/highcharts.js")"></script>
+        <script src="@Url.Content("~/Scripts/Highcharts-3.0.10/modules/data.js")"></script>
+        <script src="@Url.Content("~/Scripts/Highcharts-3.0.10/modules/drilldown.js")"></script>
+}
+
+<script type="text/javascript">
+    $(function () {
+
+        Highcharts.setOptions({
+            lang: {
+                drillUpText: "Назад"
+            }
+        });
+
+        var solutionsData = [],
+            drilldownSeries = [];
+
+        $.ajax({
+            url: '@Url.Action("GetSolutionsStatistic", controllerName: "Tournament")',
+            dataType: 'json',
+            type: 'GET',
+            data: { tournamentID: '@Model.TournamentID' },
+            success: function (data) {
+                $.each(data.Drilldown, function (key, value) {
+                    var values = [];
+                    $.each(value.data, function (k, v) {
+                        values.push([v.Key, v.Value]);
+                    });
+                    
+                    drilldownSeries.push({
+                        name: value.name,
+                        id: value.id,
+                        data: values
+                    });
+                });
+                
+                // Create the chart
+                $('#container').highcharts({
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'Статистика отправок решений'
+                    },
+                    subtitle: {
+                        text: 'Нажмите на столбец для подробного просмотра'
+                    },
+                    xAxis: {
+                        type: 'category'
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Количество отправок'
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.y}'
+                            }
+                        }
+                    },
+
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> отправок(и)<br/>'
+                    },
+
+                    series: [{
+                        name: 'Решения',
+                        colorByPoint: true,
+                        data: data.SolutionsData
+                    }],
+                    drilldown: {
+                        series: drilldownSeries
+                    }
+                });
+            },
+            cache: false
+        });
+
+        //Highcharts.data({
+        //    csv: document.getElementById('tsv').innerHTML,
+        //    itemDelimiter: '\t',
+        //    parsed: function (columns) {
+
+                
+
+        //        // Parse percentage strings
+        //        columns[1] = $.map(columns[1], function (value) {
+        //            if (value.indexOf('%') === value.length - 1) {
+        //                value = parseFloat(value);
+        //            }
+        //            return value;
+        //        });
+
+        //        $.each(columns[0], function (i, name) {
+        //            var brand,
+        //                version;
+
+        //            if (i > 0) {
+
+        //                // Remove special edition notes
+        //                name = name.split(' -')[0];
+
+        //                // Split into brand and version
+        //                version = name.match(/([0-9]+[\.0-9x]*)/);
+        //                if (version) {
+        //                    version = version[0];
+        //                }
+        //                brand = name.replace(version, '');
+
+        //                // Create the main data
+        //                if (!brands[brand]) {
+        //                    brands[brand] = columns[1][i];
+        //                } else {
+        //                    brands[brand] += columns[1][i];
+        //                }
+
+        //                // Create the version data
+        //                if (version !== null) {
+        //                    if (!versions[brand]) {
+        //                        versions[brand] = [];
+        //                    }
+        //                    versions[brand].push(['v' + version, columns[1][i]]);
+        //                }
+        //            }
+
+        //        });
+
+        //        $.each(brands, function (name, y) {
+        //            brandsData.push({
+        //                name: name,
+        //                y: y,
+        //                drilldown: versions[name] ? name : null
+        //            });
+        //        });
+        //        $.each(versions, function (key, value) {
+        //            drilldownSeries.push({
+        //                name: key,
+        //                id: key,
+        //                data: value
+        //            });
+        //        });
+                
+        //    }
+        //});
+
+        
+    });
+</script>
+
+<div style="text-align:center;">
+    <h3 style="margin: 0 0 10px 0;">@Html.ActionLink(Model.TournamentName, "Problem", "Problem", new { tournamentID = Model.TournamentID, Area = "" }, null)</h3>
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+</div>

@@ -1,0 +1,73 @@
+﻿@model Solomon.WebUI.ViewModels.AddSolutionViewModel
+
+@{
+    Layout = null;
+}
+
+<script type="text/javascript">
+    function getFileExtension(fileName)
+    {
+        var a = fileName.split(".");
+        if (a.length === 1 || (a[0] === "" && a.length === 2)) {
+            return "";
+        }
+        return a.pop();
+    }
+
+    function setLanguage(fieldObj)
+    {
+        if (fieldObj.files[0].size > 262144) {
+            toastr.error("Максимальный размер файла - 256 кб");
+            fieldObj.value = "";
+            return false;
+        }
+
+        var fileName = fieldObj.value;
+        var fileExt = getFileExtension(fileName);
+        
+        switch (fileExt) {
+            case "c":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.C)');
+                break;
+            case "cpp":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.CPP)');
+                break;
+            case "cs":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.CS)');
+                break;
+            case "java":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.Java)');
+                break;
+            case "pas":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.Pascal)');
+                break;
+            case "dpr":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.Delphi)');
+                break;
+            case "py":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.Python)');
+                break;
+            case "vb":
+                $("#@Html.IdFor(model => model.ProgrammingLanguageID)").val('@((int)Solomon.TypesExtensions.ProgrammingLanguages.VB)');
+                break;
+        }
+    }
+</script>
+
+@using (Html.BeginForm("AddSolution", "Problem",
+        new { problemID = Model.ProblemID, tournamentID = Model.TournamentID },
+        FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="addsolution_wrapper">
+        @if (Model.PT == Solomon.TypesExtensions.ProblemTypes.Open)
+        {
+            @Html.HiddenFor(model => model.ProgrammingLanguageID);
+        }
+        @if (Model.PT != Solomon.TypesExtensions.ProblemTypes.Open)
+        {
+            @Html.DropDownListFor(model => model.ProgrammingLanguageID, Model.ProgrammingLanguagesList);
+        }
+        @Html.TextBoxFor(model => model.SolutionFile, new { @type = "file", @onchange="setLanguage(this)" })
+        <input class="button" type="submit" value="Отправить" />
+    </div>
+}

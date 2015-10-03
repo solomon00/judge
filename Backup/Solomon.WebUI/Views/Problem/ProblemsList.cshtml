@@ -1,0 +1,19 @@
+﻿@model Solomon.WebUI.ViewModels.ProblemsListViewModel
+
+@{
+    Layout = null;
+}
+
+@if (Model.Problems.Count() != 0)
+{
+    <h3>Список задач:</h3>
+
+    foreach (var p in Model.Problems)
+    {
+        @Html.ActionLink(p.Name, "Problem", "Problem", new { TournamentID = Model.TournamentID, ProblemID = p.ProblemID, Area = "" }, null)
+    }
+}
+else
+{
+    <h3>Нет задач в турнире</h3>
+}

@@ -1,0 +1,269 @@
+﻿body {
+}
+
+/*************************************
+* Begin Management Styles
+*************************************/
+
+div.row label
+{
+    display: block;
+    float: left;
+    width: 700px;
+    font-weight: bold;
+    margin-left: 2px;
+}
+div.row label.checkbox
+{
+    display: inline;
+    float: none;
+    width: 700px;
+    font-weight: bold;
+}
+div.row div.inputs
+{
+    /*width: 520px;*/
+    /*width: 790px;*/
+    width: 700px;
+    margin-left: 1px;
+}
+div.row div.inputs .input_wrapper
+{
+    float: left;
+    width: 700px;
+    margin: 0;
+    padding: 0;
+    /*border: 1px solid #cecece;*/
+}
+div.row div.inputs .input_wrapper input.text, 
+div.row div.inputs .input_wrapper textarea.text
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 688px;
+}
+div.row div.inputs .input_wrapper select.text
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 698px;
+}
+div.row div.inputs .input_wrapper input[type="file"]
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 3px;
+    width: 688px;
+}
+
+div.row div.inputs .input_wrapper input.half-text, 
+div.row div.inputs .input_wrapper input.text-box
+{
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 320px;
+}
+div.row div.inputs .input_wrapper select.half-text {
+    color: #333;
+    font-size: 1.2em;
+    margin: 0;
+    padding: 5px;
+    width: 332px;
+}
+
+.system
+{
+    display: block;
+    float: left;
+    padding: 0;
+    white-space: nowrap;
+    font-weight: bold;
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+
+/*************************************
+* End Management Styles
+*************************************/
+
+
+
+
+/*************************************
+* Begin Membership Styles
+*************************************/
+
+#available-roles, #granted-roles, #grant-controls
+{
+    float: left;
+    width: auto;
+    height: 100%;
+}
+
+#available-roles h3, #granted-roles h3
+{
+    margin: 0;
+    padding: 5px 0 5px 0;
+}
+
+#available-roles select, #granted-roles select
+{
+    min-width: 150px;
+    width: auto;
+    max-width: 250px;
+    height: 280px;
+    margin-bottom: 1.4em;
+}
+
+#grant-controls
+{
+    margin: 75px 10px 0 10px;
+}
+
+#grant-controls button
+{
+    width: 130px;
+}
+
+#username-to-grant-roles
+{
+    border: 1px solid #FFCC66;
+    padding: 3px;
+    background-color: #FFFF99;
+    font-weight: bold;
+    font-size: medium;
+}
+
+.approved
+{
+    float: left;
+    width: 16px;
+    background-image:url(images/positive.gif);
+    background-repeat: no-repeat;
+    padding-right: 10px;
+}
+
+.notapproved
+{
+    float: left;
+    width: 16px;
+    background-image:url(images/negative.gif);
+    background-repeat: no-repeat;
+    padding-right: 10px;
+}
+
+/*************************************
+* End Membership Styles
+*************************************/
+
+
+/*************************************
+* Begin Problem Membership Styles
+*************************************/
+
+#available, #bound, #bind-controls
+{
+    float: left;
+    width: auto;
+    height: 100%;
+}
+
+#available h3, #bound h3
+{
+    margin: 0;
+    padding: 5px 0 5px 0;
+}
+
+#available select, #bound select
+{
+    min-width: 150px;
+    width: auto;
+    max-width: 250px;
+    height: 280px;
+    margin-bottom: 1.4em;
+}
+
+#bind-controls
+{
+    margin: 75px 10px 0 10px;
+}
+
+#bind-controls button
+{
+    width: 130px;
+}
+
+#problemname-to-bind-tournaments
+{
+    border: 1px solid #FFCC66;
+    padding: 3px;
+    background-color: #FFFF99;
+    font-weight: bold;
+    font-size: medium;
+}
+
+#tournamentname-to-bind-problems
+{
+    border: 1px solid #FFCC66;
+    padding: 3px;
+    background-color: #FFFF99;
+    font-weight: bold;
+    font-size: medium;
+}
+
+#tournamentname-to-bind-users
+{
+    border: 1px solid #FFCC66;
+    padding: 3px;
+    background-color: #FFFF99;
+    font-weight: bold;
+    font-size: medium;
+}
+
+.approved
+{
+    float: left;
+    width: 16px;
+    background-image:url(images/positive.gif);
+    background-repeat: no-repeat;
+    padding-right: 10px;
+}
+
+.notapproved
+{
+    float: left;
+    width: 16px;
+    background-image:url(images/negative.gif);
+    background-repeat: no-repeat;
+    padding-right: 10px;
+}
+
+/*************************************
+* End Problem Management Styles
+*************************************/
+
+
+/* multi-select */
+.ms-container{
+    width: 688px !important;
+}
+.ms-container .ms-selectable, .ms-container .ms-selection{
+    width: 320px !important;
+}
+.ms-container .ms-selectable{
+    float: left !important;
+    margin-right: 48px;
+}
+
+.search-input {
+    width: 310px;
+    margin-bottom: 5px;
+}
+/* /multi-select */

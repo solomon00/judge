@@ -1,0 +1,308 @@
+﻿@model Solomon.WebUI.ViewModels.TournamentResultsViewModel
+
+@{
+    ViewBag.Title = "Результаты турнира";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/TournamentResults.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/Progressbar.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+}
+
+<script type="text/javascript">
+    $(function () {
+        var start = (new Date('@Model.TournamentStartDate.Year',
+            '@(Model.TournamentStartDate.Month - 1)',
+            '@Model.TournamentStartDate.Day',
+            '@Model.TournamentStartDate.Hour',
+            '@Model.TournamentStartDate.Minute')).getTime();
+        var end = (new Date('@Model.TournamentEndDate.Year',
+            '@(Model.TournamentEndDate.Month - 1)',
+            '@Model.TournamentEndDate.Day',
+            '@Model.TournamentEndDate.Hour',
+            '@Model.TournamentEndDate.Minute')).getTime();
+        var current = (new Date('@Model.CurrentTime.Year',
+            '@(Model.CurrentTime.Month - 1)',
+            '@Model.CurrentTime.Day',
+            '@Model.CurrentTime.Hour',
+            '@Model.CurrentTime.Minute')).getTime();
+        var diff = current - new Date();
+        var barLength = 910;
+
+        var progressbar = $("#timeProgressbar");
+        var progressLabel = $("#timeProgressLabel");
+
+        function progress() {
+            var now = (new Date()).getTime() + diff;
+
+            if (end - now < 0) {
+                clearInterval(progressbarInterval);
+                progressLabel.text("");
+                location.reload(true);
+                return;
+            }
+
+            var val = (barLength * (end - now)) / (end - start);
+
+            var s = end - now;
+
+            progressbar.width(val);
+
+            var ms = s % 1000;
+            s = (s - ms) / 1000;
+            var secs = s % 60;
+            if (secs < 10) secs = '0' + secs;
+            s = (s - secs) / 60;
+            var mins = s % 60;
+            if (mins < 10) mins = '0' + mins;
+            s = (s - mins) / 60
+            var hours = s;
+
+            if (val > barLength / 2) {
+                progressbar.css('background', 'rgba(155, 230, 155, 0.6)');
+            }
+            else if (val > barLength / 6) {
+                progressbar.css('background', 'rgba(255, 215, 152, 0.6)');
+            }
+            else {
+                progressbar.css('background', 'rgba(255, 144, 144, 0.6)');
+            }
+
+            var countdown = hours > 0 ? hours + ":" : "";
+            countdown += mins + ":" + secs;
+            progressLabel.text("До конца турнира осталось - " + countdown);
+        }
+        if ('@Model.ShowTimer' == 'True' && end - current > 0 && start < current) {
+            progress();
+            var progressbarInterval = setInterval(progress, 1000);
+        }
+        else if (end < current) {
+            progressLabel.text("Турнир завершен");
+        }
+        else if (start > current) {
+            progressLabel.text("Турнир еще не начался");
+        }
+    });
+</script>
+
+<div style="text-align:center;">
+    <div id="timeProgressbar"><span id="timeProgressLabel" class="progress-label" style="min-width:300px; text-align:right;"></span></div>
+
+    @if (Model.CanExportResults)
+    {
+        <script type="text/javascript">
+            $(function () {
+                $("#exportResultsToExcel").accordion({
+                    collapsible: true,
+                    active: false
+                });
+            });
+        </script>
+        using (Html.BeginForm("ExportResultsToExcel", "Tournament", FormMethod.Post, new { tournamentID = Model.TournamentID, area = "", enctype = "multipart/form-data" }))
+        {
+            @Html.HiddenFor(model => model.TournamentID)
+            <div id="exportResultsToExcel" style="text-align:left;">
+                <h3>Экспортировать в excel</h3>
+                <div>
+                    <label><strong>Включить следующие поля</strong></label>
+                    <table class="without_border" style="text-align:left;">
+                        <tr class="row">
+                            <td><input type="checkbox" name="IncludeName" checked="checked" /></td>
+                            <td><label>Имя участника</label></td>
+                            <td><input type="checkbox" name="IncludeCountry" /></td>
+                            <td><label>Страна</label></td>
+                        </tr>
+                        <tr class="row">
+                            <td><input type="checkbox" name="IncludeEmail" /></td>
+                            <td><label>Email</label></td>
+                            <td><input type="checkbox" name="IncludeCity" /></td>
+                            <td><label>Город</label></td>
+                        </tr>
+                        <tr class="row">
+                            <td><input type="checkbox" name="IncludeFIO" /></td>
+                            <td><label>ФИО</label></td>
+                            <td><input type="checkbox" name="IncludeInstitution" /></td>
+                            <td><label>Образовательное учреждение (организация)</label></td>
+                        </tr>
+                        <tr class="row">
+                            <td><input type="checkbox" name="IncludeBirthDay" /></td>
+                            <td><label>Дата рождения</label></td>
+                            <td><input type="checkbox" name="IncludeCategory" /></td>
+                            <td><label>Категория (школьник, студент, преподаватель, ...)</label></td>
+                        </tr>
+                        <tr class="row">
+                            <td><input type="checkbox" name="IncludePhoneNumber" /></td>
+                            <td><label>Номер телефона</label></td>
+                            <td><input type="checkbox" name="IncludeGradeLevel" /></td>
+                            <td><label>Год обучения</label></td>
+                        </tr>
+                        <tr class="row">
+                            <td><input type="checkbox" name="IncludeProblemsResults" checked="checked" /></td>
+                            <td><label>Результаты решения задач</label></td>
+                            @if (Model.TF == Solomon.TypesExtensions.TournamentFormats.IOI)
+                            {
+                                <td><input type="checkbox" name="IncludeTotalScoreIOI" checked="checked" /></td>
+                                <td><label>Всего очков</label></td>
+                            }
+                            else
+                            {
+                                <td><input type="checkbox" name="IncludeTotalAcceptedACM" checked="checked" /></td>
+                                <td><label>Всего зачтено</label></td>
+                            }
+                        </tr>
+                        <tr class="row">
+                            <td></td>
+                            <td></td>
+                            @if (Model.TF == Solomon.TypesExtensions.TournamentFormats.ACM)
+                            {
+                                <td><input type="checkbox" name="IncludeTotalPenaltiesACM" checked="checked" /></td>
+                                <td><label>Всего штрафных</label></td>
+                            }
+                        </tr>
+                    </table>
+                    <p>
+                        <input class="button" type="submit" value="Экспортировать" style="width:150px;"/>
+                    </p>
+                </div>
+            </div>
+        }
+    }
+
+    <h3>@Html.ActionLink(Model.TournamentName, "Problem", "Problem", new { tournamentID = Model.TournamentID, Area = "" }, null)</h3>
+
+    @if (Model.TournamentResults.Count() > 0)
+    {
+        <table style="margin: 10px auto;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Место</th>
+                    <th>Участник</th>
+                    <th>ФИО</th>
+                    @foreach (var problem in Model.Problems)
+                    {
+                        <th style="width: 35px;">@Html.ActionLink(problem.Name, "Problem", "Problem", new { TournamentID = Model.TournamentID, ProblemID = problem.ProblemID, Area = "" }, null)</th>
+                    }
+                    @if (Model.TF == Solomon.TypesExtensions.TournamentFormats.ACM)
+                    {
+                        <th style="width: 10px;">Всего зачтено</th>
+                        <th style="width: 10px;">Всего штрафных</th>
+                    }
+                    else if (Model.TF == Solomon.TypesExtensions.TournamentFormats.IOI)
+                    {
+                        <th style="width: 10px;">Всего</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @{ int i = 0; }
+                @foreach (var result in Model.TournamentResults)
+                {
+                    i++;
+                    string nameMargin = "";
+                    if (result.Online)
+                    {
+                        nameMargin = "margin-left: 10px;";
+                    }
+                    <tr>
+                        <td>@i</td>
+                        <td>@result.Place</td>
+                        <td style="position: relative">
+                            @if (result.Online)
+                            {
+                            <div class="circle-online" title="online"></div>
+                            }
+                            <span style="@nameMargin">@result.Name</span>
+                        </td>
+                        <td>@Html.Raw(result.FullName)</td>
+                        @if (Model.TF == Solomon.TypesExtensions.TournamentFormats.ACM)
+                        {
+                            foreach (var problemResult in result.ProblemsResults)
+                            {
+                                string color = "transparent";
+                                string text = problemResult.Penalties > 0 ? problemResult.Penalties.ToString() : "";
+                                if (problemResult.Accept == true)
+                                {
+                                    color = "#9BE69B";
+                                    text = "+" + text;
+                                }
+                                else if (problemResult.Penalties > 0)
+                                {
+                                    color = "#FF9090";
+                                    text = "-" + text;
+                                }
+                                else
+                                {
+                                    text = "";
+                                }
+                                <td style="background-color:@color">
+                                    <span>@text</span>
+                                    @if (problemResult.Accept == true && Model.ShowSolutionSendingTime)
+                                    {
+                                        <br />
+                                        <span style="font-size: 11px;">@Math.Floor(problemResult.AcceptTime.TotalMinutes):@problemResult.AcceptTime.Seconds</span>
+                                    }
+                                </td>
+                            }
+                            <td>@result.TotalAccepted</td>
+                            <td>@result.TotalPenalties</td>
+                        }
+                        else if (Model.TF == Solomon.TypesExtensions.TournamentFormats.IOI)
+                        {
+                            foreach (var problemResult in result.ProblemsResults)
+                            {
+                                string color = "transparent";
+                                string text = problemResult.Penalties > 0 ? problemResult.Score.ToString() : "";
+                                if (problemResult.Accept == true)
+                                {
+                                    color = "#9BE69B";
+                                }
+                                else if (problemResult.Penalties > 0)
+                                {
+                                    if (problemResult.Score > 0)
+                                    {
+                                        color = "#FFD798";
+                                    }
+                                    else
+                                    {
+                                        color = "#FF9090";
+                                    }
+                                }
+                                else
+                                {
+                                    text = "";
+                                }
+                                <td style="background-color:@color">
+                                    <span>@text</span>
+                                    @if (problemResult.Score > 0 && Model.ShowSolutionSendingTime)
+                                    {
+                                        <br />
+                                        <span style="font-size: 11px;">@Math.Floor(problemResult.AcceptTime.TotalMinutes):@problemResult.AcceptTime.Seconds</span>
+                                    }
+                                </td>
+                            }
+                            <td>@result.TotalScore</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <table class="without_border" style="text-align: left;">
+            <tr>
+                <td>Всего участников:</td>
+                <td>@Model.TournamentResults.Count()</td>
+            </tr>
+            <tr>
+                <td>Из них онлайн:</td>
+                <td>@Model.TournamentResults.Count(r => r.Online)</td>
+            </tr>
+        </table>
+    }
+    else
+    {
+        <p>Решения не отправлялись</p>
+    }
+</div>

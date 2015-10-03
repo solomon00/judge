@@ -1,0 +1,346 @@
+﻿@model Solomon.WebUI.Areas.TestersManagement.ViewModels.ShowTesterViewModel
+@{
+    ViewBag.Title = Model.Address;
+    Layout = "~/Areas/TestersManagement/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+    $(document).ready(function ()
+    {
+        var reloadTable = function () {
+            $.ajax({
+                url: '@Url.Action("GetTesterInfo", "Tester", new { Address = Model.Address, Area = "TestersManagement" }, null)',
+                dataType: 'json',
+                type: 'GET',
+                success: function (data) {
+                    $.each(data.Testers, function (i, item) {
+                        var cell = document.getElementById(item.Address + "CPULoad");
+                        cell.innerHTML = item.CPULoad + "%";
+                        var cell = document.getElementById(item.Address + "IsConnected");
+                        cell.innerHTML = item.IsConnected;
+                        var cell = document.getElementById(item.Address + "ProcessorsCount");
+                        cell.innerHTML = item.ProcessorsCount;
+                        var cell = document.getElementById(item.Address + "CheckingSolutionsCount");
+                        cell.innerHTML = item.CheckingSolutionsCount;
+                    });
+                },
+                cache: false
+            });
+        }
+        reloadTable();
+        var timer = setInterval(reloadTable, 2000);
+    });
+</script>
+
+<div id="breadcrumb">
+    @Html.ActionLink("Главная", "Index", "Home", new { Area = "TestersManagement" }, null) > 
+    @Html.ActionLink("Тестеры", "Index", "Tester", new { Area = "TestersManagement" }, null) >
+    @Model.Address
+</div>
+
+<h2>
+    @Model.Address
+</h2>
+
+<div class="section_inner">
+    <table class="">
+        <tr>
+            <td>Соединение</td>
+            <td id="@(Model.Address)IsConnected">@Model.IsConnected</td>
+        </tr>
+        <tr>
+            <td>Количество потоков обработки</td>
+            <td id="@(Model.Address)ProcessorsCount">@Model.ProcessorsCount</td>
+        </tr>
+        <tr>
+            <td>Загрузка процессора</td>
+            <td id="@(Model.Address)CPULoad">@Model.CPULoad%</td>
+        </tr>
+        <tr>
+            <td>Проверяется решений</td>
+            <td id="@(Model.Address)CheckingSolutionsCount">@Model.CheckingSolutionsCount</td>
+        </tr>
+        <tr>
+            <td>Доступные компиляторы</td>
+            <td>@foreach (Solomon.TypesExtensions.ProgrammingLanguages pl in Model.Compilers)
+                {
+                    switch (pl)
+                    {
+                        case Solomon.TypesExtensions.ProgrammingLanguages.C:
+                            @:C<br />
+                        break;
+                        case Solomon.TypesExtensions.ProgrammingLanguages.CPP:
+                            @:C++<br />
+                        break;
+                        case Solomon.TypesExtensions.ProgrammingLanguages.CS:
+                            @:CSharp<br />
+                        break;
+                        case Solomon.TypesExtensions.ProgrammingLanguages.VB:
+                            @:VB<br />
+                        break;
+                        case Solomon.TypesExtensions.ProgrammingLanguages.Java:
+                            @:Java<br />
+                        break;
+                        case Solomon.TypesExtensions.ProgrammingLanguages.Pascal:
+                            @:Pascal<br />
+                        break;
+                        case Solomon.TypesExtensions.ProgrammingLanguages.Python:
+                            @:Python<br />
+                        break;
+                        default:
+                            @pl;<br />
+                        break;
+                    }
+                }
+            </td>
+        </tr>
+    </table>
+</div>
+
+<h3>Задачи на тестере</h3>
+@using (Html.BeginForm())
+{
+    <text>Поиск:&nbsp;</text>
+    <select id="filterBy" name="filterBy">
+        <option value="all" @if (Model.FilterBy == "all")
+                            { <text>selected="selected"</text>}>Все</option>
+        <option value="id" @if (Model.FilterBy == "id")
+                           { <text>selected="selected"</text>}>ID</option>
+        <option value="name" @if (Model.FilterBy == "name")
+                             { <text>selected="selected"</text>}>Имя</option>
+    </select>
+    @Html.TextBox("searchTerm", Model.SearchTerm) 
+
+    <input class="button" type="submit" id="filter-button" value="Найти" />
+}
+@if (Model.PaginatedProblemList != null)
+{
+    if (Model.PaginatedProblemList.Count == 0)
+    {
+    <p>
+        Список задач пуст.
+    </p>
+    }
+    else
+    {
+    <text>Всего задач: @Model.PaginatedProblemList.TotalCount.ToString()</text>
+    <div class="section_inner">
+        <div class="table_wrapper">
+            <div class="table_wrapper_inner">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tbody>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Состояние</th>
+                            <th>Инфо</th>
+                        </tr>
+                        @foreach (Solomon.TypesExtensions.ProblemInfo pi in Model.PaginatedProblemList)
+                        {
+                            <tr>
+                                <td>@pi.ProblemID</td>
+                                <td>@pi.Name</td>
+                                <td>@pi.IsCorrect</td>
+                                <td>@pi.Info</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+	<!--[if !IE]>start pagination<![endif]-->
+	<div class="pagination">
+                    
+		<span class="page_no">Страница @Model.PaginatedProblemList.PageIndex из @Model.PaginatedProblemList.TotalPages</span>
+						
+		<ul class="pag_list">
+            <li>
+            @if (Model.PaginatedProblemList.HasPreviousPage)
+            {
+                @Html.ActionLink("Первая", "Show", "Tester",
+                routeValues: new
+                {
+                    Address = Model.Address,
+                    page = 1,
+                    pageSize = Model.PaginatedProblemList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Первая</text>
+            }
+            </li>
+			<li>
+            @if (Model.PaginatedProblemList.HasPreviousPage)
+            {
+                @Html.ActionLink("Предыдущая", "Show", "Tester",
+                routeValues: new
+                {
+                    Address = Model.Address,
+                    page = Model.PaginatedProblemList.PageIndex - 1,
+                    pageSize = Model.PaginatedProblemList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Предыдущая</text>
+            }
+            </li>
+
+
+            <li>
+                <select id="pageIndex" name="pageIndex">
+                @for (int i = 0; i < Model.PaginatedProblemList.TotalPages; i++)
+                {
+                    <option value="@((i + 1).ToString())" 
+                        @if (Model.PaginatedProblemList.PageIndex == i + 1)
+                        {<text>selected="selected"</text>}>@((i + 1).ToString())</option>
+                }
+                </select>
+            </li>
+
+			<li>
+            @if (Model.PaginatedProblemList.HasNextPage)
+            {
+                @Html.ActionLink("Следующая", "Show", "Tester",
+                routeValues: new
+                {
+                    Address = Model.Address,
+                    page = Model.PaginatedProblemList.PageIndex + 1,
+                    pageSize = Model.PaginatedProblemList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Следующая</text>
+            }
+            </li>
+            <li>
+            @if (Model.PaginatedProblemList.HasNextPage)
+            {
+                @Html.ActionLink("Последняя", "Show", "Tester",
+                routeValues: new
+                {
+                    Address = Model.Address,
+                    page = Model.PaginatedProblemList.TotalPages,
+                    pageSize = Model.PaginatedProblemList.PageSize,
+                    searchTerm = Model.SearchTerm,
+                    filterBy = Model.FilterBy
+                },
+                htmlAttributes: null);
+            }
+            else
+            {
+                <text>Последняя</text>
+            }
+            </li>
+		</ul>
+
+        <div id="page-size">
+        Записей на странице: <select id="pageSize" name="pageSize">
+        <option value="25" @if (Model.PageSize == 25)
+                           {<text>selected="selected"</text>}>25</option>
+        <option value="50" @if (Model.PageSize == 50)
+                           {<text>selected="selected"</text>}>50</option>
+        <option value="100" @if (Model.PageSize == 100)
+                            {<text>selected="selected"</text>}>100</option>
+        </select>
+        </div>
+
+	</div>
+	<!--[if !IE]>end pagination<![endif]-->       
+    }
+}
+<script type="text/javascript">
+
+    $(function () {
+
+        /**************************************************
+        * Begin filterBy functions
+        *
+        * This will enable or disable the search field
+        * if the "ViewAll" selection is chosen.
+        **************************************************/
+
+        $(document).on('change', '#filterBy', function () {
+            var optionValue = $("option:selected", this).val();
+            if (optionValue == "all") {
+                // Clear the search field
+                $("#searchTerm").val("");
+
+                // Disable the search term field
+                $("#searchTerm").attr("disabled", "disabled");
+            } else {
+                $("#searchTerm").removeAttr("disabled");
+            }
+        });
+
+
+        function InitSearchField() {
+            var filterByVal = $("#filterBy option:selected").val();
+            if (filterByVal == "all") {
+                $("#searchTerm").attr("disabled", "disabled");
+            }
+        }
+
+        InitSearchField();
+
+        /**************************************************
+        * End filterBy functions
+        **************************************************/
+
+
+        /**************************************************
+        * Begin PageIndex functions
+        *
+        * This handles the page index selected change functions.
+        **************************************************/
+
+        $("#pageIndex").change(function () {
+            var filterByVal = '&FilterBy=' + $("#filterBy option:selected").val();
+            var pageIndexVal = '&Page=' + $("option:selected", this).val();
+            var pageSizeVal = '&PageSize=' + $("#pageSize option:selected").val();
+            var testerAddress = '?Address=@Model.Address';
+            location.href = '/TestersManagement/Tester/Show' + testerAddress + pageIndexVal + pageSizeVal + filterByVal;
+        });
+
+        /**************************************************
+        * End PageIndex functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin PageSize functions
+        *
+        * This handles the page size selected change functions.
+        **************************************************/
+
+        $("#pageSize").change(function () {
+            var filterByVal = '&FilterBy=' + $("#filterBy option:selected").val();
+            var searchTermVal = $("#searchTerm").val();
+            if (searchTermVal != '') searchTermVal = '&SearchTerm=' + searchTermVal;
+            var pageSizeVal = '&PageSize=' + $("option:selected", this).val();
+            var testerAddress = '?Address=@Model.Address';
+            location.href = '/TestersManagement/Tester/Show' + testerAddress + pageSizeVal + searchTermVal + filterByVal;
+        });
+
+        /**************************************************
+        * End PageSize functions
+        **************************************************/
+
+
+    });
+
+</script>

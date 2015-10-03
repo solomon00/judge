@@ -1,0 +1,91 @@
+﻿@model Solomon.WebUI.Areas.User.ViewModels.InvitesViewModel
+@{
+    ViewBag.Title = "Приглашения";
+    if (Model.CanChangePassword)
+    {
+        Layout = "~/Areas/User/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Areas/User/Views/Shared/_LayoutWithoutPassword.cshtml";
+    }
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+}
+
+<script type="text/javascript">
+    $(function () {
+        
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+
+<h2>@ViewBag.Title</h2>
+
+<section>
+    @if (Model.Invites.Count() == 0)
+    {
+        <p>Нет приглашений в команду</p>
+    }
+    else
+    {
+        <h4 style="margin: 1em 0 1em 0;"><b>Следующие команды хотят, чтобы Вы стали их участником:</b></h4>
+        foreach (var team in Model.Invites)
+        {
+            using (Html.BeginForm("InviteResponse", "Team", new { TeamID = team.TeamID }, FormMethod.Post, new { Area = "User", enctype = "multipart/form-data" }))
+            {
+                <fieldset style="margin-top:0px; margin-bottom: 15px;">
+                    <legend>@team.Name</legend>
+                    <table class="without_border" style="width: 100%">
+                        <thead>
+                            <tr>
+                                <td style="width: 20px;"><h4 style="margin: 0">#</h4></td>
+                                <td style="width: 250px;"><h4 style="margin: 0">Пользователь</h4></td>
+                                <td style="width: 370px;"><h4 style="margin: 0">Полное имя</h4></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int i = 0;}
+                            @foreach (var member in team.Members)
+                            {
+                                if (member.UserID != WebSecurity.GetUserId(User.Identity.Name))
+                                {
+                                    string fullName = (member.User.SecondName + " " + member.User.FirstName + " " + member.User.ThirdName).Trim();
+                                    i++;
+                                    <tr>
+                                        <td>@i</td>
+                                        <td>@member.User.UserName</td>
+                                        <td>@{ if (fullName == null || fullName == "")
+                                                {<text>Не определено</text>}
+                                                else
+                                                {@fullName;
+                                                }
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <p style="text-align: center;">
+                        <input class="button" type="submit" value="Принять" name="Accept" />
+                        <input class="button" type="submit" value="Отклонить" name="Reject" />
+                    </p>
+                </fieldset>
+            }
+        }
+    }
+
+</section>

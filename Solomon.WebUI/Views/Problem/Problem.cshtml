@@ -1,0 +1,449 @@
+﻿@model Solomon.WebUI.ViewModels.ProblemViewModel
+
+@{
+    ViewBag.Title = "Задачи";
+}
+
+@section AddToHead
+{
+        <link href="@Url.Content("~/Content/Problem.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/Pagination.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/contextMenu.css")" rel="stylesheet"/>
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.custom.css")" rel="stylesheet"/>
+        <script src="@Url.Content("~/Scripts/jquery-ui-1.10.3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/jsMath-3.6e/easy/load.js")"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/contextMenu.js")" type="text/javascript"></script>
+
+        <link href="@Url.Content("~/Content/Progressbar.css")" rel="stylesheet"/>
+}
+
+@if (WebSecurity.IsAuthenticated)
+{
+    @*<script type="text/javascript">
+
+        var reloadNewCommentsCounter = function () {
+            $.ajax({
+                url: '@Url.Action("GetNewCommentsCount", controllerName: "Problem")',
+                dataType: 'json',
+                type: 'GET',
+                data: { tournamentID: '@Model.TournamentID', problemID: '@Model.ProblemID' },
+                success: function (data) {
+                    $counter = $('#comments-counter');
+                    if (data.TotalCount > 0) {
+                        if ($counter.val() != data.TotalCount) {
+                            $counter.text(data.TotalCount);
+                            $counter.show();
+                        }
+                    } else {
+                        $counter.hide();
+                    }
+                },
+                cache: false
+            });
+        }
+        reloadNewCommentsCounter();
+        setInterval(reloadNewCommentsCounter, 5000);
+
+    </script>*@
+}
+
+<script type="text/javascript">
+
+    var timer;
+    function beginReloadTable() {
+        //reloadTable();
+        timer = setInterval(reloadTable, 5000);
+    }
+
+    var reloadTable = function () {
+        $.ajax({
+            url: '@Url.Action("GetSolutionsData_ajax", controllerName: "Problem")',
+            dataType: 'json',
+            type: 'GET',
+            data: { tournamentID: '@Model.TournamentID', problemID: '@Model.ProblemID', page: '@Model.PageIndex', pageSize: '@Model.PageSize' },
+            success: function (data) {
+                if (data.Reload == false) {
+                    clearInterval(timer);
+                }
+                $('#solutionsData').html(data.HtmlTable);
+            },
+            cache: false
+        });
+    }
+    beginReloadTable();
+
+
+    function changeSolutionStatus(solutionID, status) {
+        $.ajax({
+            url: '@Url.Action("ChangeSolutionStatus", controllerName: "Problem")',
+            dataType: 'json',
+            type: 'GET',
+            data: { solutionID: solutionID, result: status },
+            success: function (data) {
+                if (data.Success == true) {
+                    toastr.success('Статус решения успешно изменен');
+                }
+                else {
+                    toastr.warning('Произошла ошибка при изменении статуса решения');
+                    toastr.warning(data.Message);
+                }
+            },
+            cache: false
+        });
+    }
+
+    function showDialog(id) {
+        $("#solutionTestResults").html("");
+        $.ajax({
+            url: '@Url.Action("GetSolutionResults", controllerName: "Problem")',
+            dataType: 'json',
+            type: 'GET',
+            data: { solutionID: id },
+                success: function (data) {
+                    $("#solutionTestResults").html(data.Html);
+                    $("#dialog").dialog('open');
+                },
+                cache: false
+        });
+    }
+
+    $(function () {
+
+        $("#dialog").dialog({
+            dialogClass: "no-close",
+            autoOpen: false,
+            draggable: false,
+            modal: true,
+            maxHeight: 600,
+            width: 500,
+            resizable: false,
+            open: function () {
+                jQuery('.ui-widget-overlay').bind('click', function () {
+                    jQuery('#dialog').dialog('close');
+                })
+            },
+            buttons: [
+                {
+                    text: "OK",
+                    click: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            ]
+        });
+
+        /**************************************************
+            * Begin PageIndex functions
+            *
+            * This handles the page index selected change functions.
+            **************************************************/
+
+        $("#pageIndex").change(function () {
+            var pageIndexVal = '?page=' + $("option:selected", this).val();
+            var pageSizeVal = '&pageSize=' + $("#pageSize option:selected").val();
+            location.href = '/Tournament/' + @Model.TournamentID + '/Problem/' + @Model.ProblemID +pageIndexVal + pageSizeVal;
+        });
+
+        /**************************************************
+        * End PageIndex functions
+        **************************************************/
+
+
+
+        /**************************************************
+        * Begin PageSize functions
+        *
+        * This handles the page size selected change functions.
+        **************************************************/
+
+        $("#pageSize").change(function () {
+            var pageSizeVal = '?pageSize=' + $("option:selected", this).val();
+            location.href = '/Tournament/' + @Model.TournamentID + '/Problem/' + @Model.ProblemID +pageSizeVal;
+        });
+
+        /**************************************************
+        * End PageSize functions
+        **************************************************/
+
+
+        var start = (new Date('@Model.TournamentStartDate.Year',
+            '@(Model.TournamentStartDate.Month - 1)',
+            '@Model.TournamentStartDate.Day',
+            '@Model.TournamentStartDate.Hour',
+            '@Model.TournamentStartDate.Minute')).getTime();
+        var end = (new Date('@Model.TournamentEndDate.Year',
+            '@(Model.TournamentEndDate.Month - 1)',
+            '@Model.TournamentEndDate.Day',
+            '@Model.TournamentEndDate.Hour',
+            '@Model.TournamentEndDate.Minute')).getTime();
+        var current = (new Date('@Model.CurrentTime.Year',
+            '@(Model.CurrentTime.Month - 1)',
+            '@Model.CurrentTime.Day',
+            '@Model.CurrentTime.Hour',
+            '@Model.CurrentTime.Minute')).getTime();
+        var diff = current - new Date();
+        var barLength = 910;
+
+        var progressbar = $("#timeProgressbar");
+        var progressLabel = $("#timeProgressLabel");
+
+        function progress() {
+            var now = (new Date()).getTime() + diff;
+            
+            if (end - now < 0) {
+                clearInterval(progressbarInterval);
+                progressLabel.text("");
+                location.reload(true);
+                return;
+            }
+
+            var val = (barLength * (end - now)) / (end - start);
+            
+            var s = end - now;
+
+            progressbar.width(val);
+
+            var ms = s % 1000;
+            s = (s - ms) / 1000;
+            var secs = s % 60;
+            if (secs < 10) secs = '0' + secs;
+            s = (s - secs) / 60;
+            var mins = s % 60;
+            if (mins < 10) mins = '0' + mins;
+            s = (s - mins) / 60
+            var hours = s;
+
+            if (val > barLength / 2) {
+                progressbar.css('background', 'rgba(155, 230, 155, 0.6)');
+            }
+            else if (val > barLength / 6) {
+                progressbar.css('background', 'rgba(255, 215, 152, 0.6)');
+            }
+            else {
+                progressbar.css('background', 'rgba(255, 144, 144, 0.6)');
+            }
+            
+            var countdown = hours > 0 ? hours + ":" : "";
+            countdown += mins + ":" + secs;
+            progressLabel.text("До конца турнира осталось - " + countdown);
+        }
+        if ('@Model.ShowTimer' == 'True' && end - current > 0 && start < current) {
+            progress();
+            var progressbarInterval = setInterval(progress, 1000);
+        }
+        else if (end < current) {
+            progressLabel.text("Турнир завершен");
+        }
+        else if (start > current) {
+            progressLabel.text("Турнир еще не начался");
+        }
+
+        if ('@TempData.Keys.Contains("SuccessMessage")' == 'True') {
+            toastr.success('@TempData["SuccessMessage"]');
+        }
+        else if ('@TempData.Keys.Contains("ErrorMessage")' == 'True') {
+            toastr.error('@TempData["ErrorMessage"]');
+        }
+    });
+</script>
+
+@if (User.IsInRole("Administrator") || User.IsInRole("Judge") || Model.TournamentStartDate < DateTime.Now)
+{
+    <div id="timeProgressbar"><span id="timeProgressLabel" class="progress-label" style="min-width:300px; text-align:right;"></span></div>
+    <div id="ProblemsList">
+        @{ Html.RenderAction("ProblemsList", "Problem"); }
+    </div>
+    
+    <div id="dialog" title="Результат тестирования">
+        <div id="solutionTestResults"></div>
+    </div>
+    
+    <div id="Content">
+        @if (Model.ProblemID != -1)
+        {
+            <div style="text-align: center;">
+                <h3>@Model.TournamentName</h3>
+            </div>
+            <div id="breadcrumb">
+                @Html.ActionLink("К турнирам", "List", "Tournament", new { Area = "" }, null)
+                @Html.ActionLink("Результаты", "Results", "Tournament", new { TournamentID = @Model.TournamentID, Area = "" }, null)
+                @if (User.IsInRole("Administrator") || User.IsInRole("Judge"))
+                {
+                    @Html.ActionLink("Статистика", "Statistic", "Tournament", new { TournamentID = Model.TournamentID, Area = "" }, null)
+                }
+                <div class="notification-container">
+                    @Html.ActionLink("Обсуждение", "Comments", "Problem", new { ProblemID = @Model.ProblemID, TournamentID = @Model.TournamentID, Area = "" }, null)
+                    <span class="notification-counter" id="comments-counter"></span>
+                </div>
+            </div>
+        
+            Html.RenderAction("ProblemContent", "Problem", new { ProblemID = Model.ProblemID });
+            <h5>Отправить решение:</h5>
+            if (HttpContext.Current.User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Administrator") || User.IsInRole("Judge") || Model.TournamentEndDate > DateTime.Now)
+                {
+                    if (User.IsInRole("Administrator") || User.IsInRole("Judge") || Model.IsUserRegisterForTournament)
+                    {
+                        Html.RenderAction("AddSolution", "Problem", new { TournamentID = Model.TournamentID, ProblemID = Model.ProblemID });
+                        if (Model.TotalCount > 0)
+                        {
+                        <table style="width: 100%">
+                            <thead>
+                                <tr>
+                                    @if (Roles.IsUserInRole("Judge") || Roles.IsUserInRole("Administrator"))
+                                    {
+                                        <th style="width: 100px;">Участник</th>
+                                    }
+                                    <th>Дата отправки</th>
+                                    @if (Model.PT != Solomon.TypesExtensions.ProblemTypes.Open)
+                                    {
+                                        <th>Язык</th>
+                                    }
+                                    <th>Результат</th>
+                                    @if (Model.TF == Solomon.TypesExtensions.TournamentFormats.IOI)
+                                    {
+                                        <th style="width: 40px;">Баллы</th>
+                                    }
+                                    <th>Решение</th>
+                                </tr>
+                            </thead>
+                            <tbody id="solutionsData">
+                                @{ Html.RenderAction("GetSolutionsData", "Problem", new { TournamentID = Model.TournamentID, ProblemID = Model.ProblemID, Page = Model.PageIndex, PageSize = Model.PageSize }); }
+                            </tbody>
+                        </table>
+                        <!--[if !IE]>start pagination<![endif]-->
+	                    <div class="pagination">
+                    
+		                    <span class="page_no" id="pageNo">Страница @Model.PageIndex из @Model.TotalPages</span>
+				
+		                    <ul class="pag_list">
+                                <li>
+                                @if (Model.HasPreviousPage)
+                                {
+                                    @Html.ActionLink("Первая", "Problem", "Problem",
+                                    routeValues: new
+                                    {
+                                        page = 1,
+                                        pageSize = Model.PageSize
+                                    },
+                                    htmlAttributes: null);
+                                }
+                                else
+                                {
+                                    <text>Первая</text>
+                                }
+                                </li>
+			                    <li>
+                                @if (Model.HasPreviousPage)
+                                {
+                                    @Html.ActionLink("Предыдущая", "Problem", "Problem",
+                                    routeValues: new
+                                    {
+                                        page = Model.PageIndex - 1,
+                                        pageSize = Model.PageSize
+                                    },
+                                    htmlAttributes: null);
+                                }
+                                else
+                                {
+                                    <text>Предыдущая</text>
+                                }
+                                </li>
+
+
+                                <li>
+                                    <select id="pageIndex" name="pageIndex">
+                                    @for (int i = 0; i < Model.TotalPages; i++)
+                                    {
+                                        <option value="@((i + 1).ToString())" 
+                                            @if (Model.PageIndex == i + 1)
+                                            {<text>selected="selected"</text>}>@((i + 1).ToString())</option>
+                                    }
+                                    </select>
+                                </li>
+
+			                    <li>
+                                @if (Model.HasNextPage)
+                                {
+                                    @Html.ActionLink("Следующая", "Problem", "Problem",
+                                    routeValues: new
+                                    {
+                                        page = Model.PageIndex + 1,
+                                        pageSize = Model.PageSize
+                                    },
+                                    htmlAttributes: null);
+                                }
+                                else
+                                {
+                                    <text>Следующая</text>
+                                }
+                                </li>
+                                <li>
+                                @if (Model.HasNextPage)
+                                {
+                                    @Html.ActionLink("Последняя", "Problem", "Problem",
+                                    routeValues: new
+                                    {
+                                        page = Model.TotalPages,
+                                        pageSize = Model.PageSize
+                                    },
+                                    htmlAttributes: null);
+                                }
+                                else
+                                {
+                                    <text>Последняя</text>
+                                }
+                                </li>
+		                    </ul>
+                
+                            <div id="page-size">
+                            Записей на странице: <select id="pageSize" name="pageSize">
+                            <option value="25" @if (Model.PageSize == 25)
+                                               {<text>selected="selected"</text>}>25</option>
+                            <option value="50" @if (Model.PageSize == 50)
+                                               {<text>selected="selected"</text>}>50</option>
+                            <option value="100" @if (Model.PageSize == 100)
+                                                {<text>selected="selected"</text>}>100</option>
+                            </select>
+                            </div>
+                
+	                    </div>
+	                    <!--[if !IE]>end pagination<![endif]--> 
+                        }
+                        else
+                        {
+                        <p>Решения не отправлялись.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Для участия в турнире, Вам необходимо @Html.ActionLink("зарегистрироваться", "Register", "Tournament", new { ReturnUrl = HttpContext.Current.Request.Url.AbsolutePath }, null)</p>
+                    }
+
+                }
+                else
+                {
+                    <p>Турнир завершен, Вы не можете отправлять решения.</p>
+                }
+            }
+            else
+            {
+                <h4 class="error">
+                    Вы не можете отправлять решения. Пожалуйста, @Html.ActionLink("войдите", "Login", "Account", new { ReturnUrl = HttpContext.Current.Request.Url.AbsolutePath }, htmlAttributes: new { id = "loginLink" }) в систему.
+                </h4>
+            }
+        }
+        else
+        {
+            <p>Произошла ошибка при загрузке задачи.</p>
+        }
+    </div>
+}
+else
+{
+    <p>Турнир еще не начался.</p>
+    <p>Начало @Model.TournamentStartDate.ToString("dd.MM.yyyy") в @Model.TournamentStartDate.ToString("HH:mm").</p>
+}

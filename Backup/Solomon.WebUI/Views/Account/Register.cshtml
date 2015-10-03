@@ -1,0 +1,150 @@
+﻿@model Solomon.WebUI.Models.RegisterViewModel
+@{
+    ViewBag.Title = "Регистрация";
+}
+
+<section id="registerForm">
+
+<hgroup class="title">
+    <h1>@ViewBag.Title</h1>
+</hgroup>
+
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+
+        <div class="row">
+            @Html.LabelFor(model => model.UserName)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.UserName, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.UserName, null, new { id = "username-message" })</span>
+            </div>
+        </div>
+
+        @*<div class="row">
+            @Html.LabelFor(model => model.Title)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Title, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Title)</span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.CategoryList)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.DropDownListFor(model => model.CategoryListID, Model.CategoryList, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.CategoryList)</span>
+            </div>
+        </div>*@
+
+        <div class="row">
+            @Html.LabelFor(model => model.Email)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.TextBoxFor(model => model.Email, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Email, null, new { id = "email-message" })</span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.Password)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.PasswordFor(model => model.Password, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.Password)</span>
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.LabelFor(model => model.ConfirmPassword)
+            <div class="inputs">
+                <span class="input_wrapper">@Html.PasswordFor(model => model.ConfirmPassword, new { @class = "text" })</span>
+                <span class="system negative">@Html.ValidationMessageFor(model => model.ConfirmPassword)</span>
+            </div>
+        </div>
+
+        <p>
+            <input class="button" type="submit" value="Зарегистрироваться" />
+        </p>
+}
+</section>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+<script type="text/javascript">
+
+    $(function () {
+
+        var username_msg = $("#username-message");
+        var email_msg = $("#email-message");
+        var btn = $("input[type='submit']");
+
+        $("#UserName").focus();
+
+        $("#UserName").blur(function () {
+
+            var userName = $(this).val();
+
+            if (userName == "") return;
+
+            $.ajax({
+                url: '@Url.Action("CheckForUniqueUser", "Account")',
+                dataType: 'json',
+                type: 'GET',
+                data: { userName: userName },
+                success: OnCheckForUniqueUserSuccess,
+                error: OnCheckForUniqueUserError
+            });
+        });
+
+        function OnCheckForUniqueUserSuccess(data) {
+            if (data.Exists) {
+                username_msg.text("Пользователь с таким именем уже зарегистрирован. Пожалуйста, введите другое имя.");
+                username_msg.attr("class", "field-validation-error");
+                btn.attr("disabled", "disabled");
+            } else {
+                username_msg.text("");
+                username_msg.attr("class", "field-validation-valid");
+                btn.removeAttr("disabled");
+            }
+        }
+
+        function OnCheckForUniqueUserError(xhr, status, error) {
+            username_msg.text("Произошла ошибка при проверке уникальности имени.");
+            username_msg.attr("class", "field-validation-error");
+        }
+
+        $("#Email").blur(function () {
+
+            var email = $(this).val();
+
+            if (email == "") return;
+
+            $.ajax({
+                url: '@Url.Action("CheckForUniqueEmail", "Account")',
+                dataType: 'json',
+                type: 'GET',
+                data: { email: email },
+                success: OnCheckForUniqueEmailSuccess,
+                error: OnCheckForUniqueEmailError
+            });
+        });
+
+        function OnCheckForUniqueEmailSuccess(data) {
+            if (data.Exists) {
+                email_msg.text("Пользователь с таким email уже зарегистрирован. Пожалуйста, введите другой email.");
+                email_msg.attr("class", "field-validation-error");
+                btn.attr("disabled", "disabled");
+            } else {
+                email_msg.text("");
+                email_msg.attr("class", "field-validation-valid");
+                btn.removeAttr("disabled");
+            }
+        }
+
+        function OnCheckForUniqueEmailError(xhr, status, error) {
+            email_msg.text("Произошла ошибка при проверке уникальности email адреса.");
+            email_msg.attr("class", "field-validation-error");
+        }
+    });
+
+</script>
