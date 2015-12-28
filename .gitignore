@@ -53,4 +53,5 @@ Thumbs.db
 
 Temp/
 !*/lib/*.dll
+!ProcessPrivileges.dll
 .vs/
